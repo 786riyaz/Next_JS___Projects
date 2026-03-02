@@ -1,0 +1,165 @@
+{
+  "info": {
+    "_postman_id": "a58f8950-a8a7-428f-b10a-4fe9c69fe7cf",
+    "name": "Task Management",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "24594422"
+  },
+  "item": [
+    {
+      "name": "Login",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"email\": \"admin@test.com\",\r\n  \"password\": \"password123\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/auth/login",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "auth",
+            "login"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Register",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"name\": \"Tasin\",\r\n  \"email\": \"tasin@test.com\",\r\n  \"password\": \"password123\",\r\n  \"phone\": \"9999999999\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/auth/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get All Tasks",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/api/tasks",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "tasks"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Task",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": " {\r\n        \"title\": \"Complete Documentation\",\r\n        \"description\": \"Finish project documentation RRR\",\r\n        \"status\": \"PENDING\",\r\n        \"priority\": \"HIGH\",\r\n        \"assignedToId\": \"6cf044d7-2926-4c51-9bc5-a85fdc0bb02e\",\r\n        \"assignedById\": \"a9322708-34c4-4b0f-9e7d-d86ebfc361b6\"\r\n    }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/tasks/4f7b4d25-3105-490d-8312-6f5fa860bf85",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "tasks",
+            "4f7b4d25-3105-490d-8312-6f5fa860bf85"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Delete Task",
+      "request": {
+        "auth": {
+          "type": "noauth"
+        },
+        "method": "DELETE",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": " {\r\n        \"title\": \"Complete Documentation\",\r\n        \"description\": \"Finish project documentation RRR\",\r\n        \"status\": \"PENDING\",\r\n        \"priority\": \"HIGH\",\r\n        \"assignedToId\": \"6cf044d7-2926-4c51-9bc5-a85fdc0bb02e\",\r\n        \"assignedById\": \"a9322708-34c4-4b0f-9e7d-d86ebfc361b6\"\r\n    }",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/api/tasks/4f7b4d25-3105-490d-8312-6f5fa860bf85",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "api",
+            "tasks",
+            "4f7b4d25-3105-490d-8312-6f5fa860bf85"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
