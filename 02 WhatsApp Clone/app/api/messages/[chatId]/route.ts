@@ -9,6 +9,7 @@ export async function GET(
   context: { params: Promise<{ chatId: string }> }
 ) {
   try {
+
     const user = verifyToken(req);
 
     if (!user) {
@@ -18,7 +19,6 @@ export async function GET(
       );
     }
 
-    // ✅ unwrap params correctly
     const { chatId } = await context.params;
 
     const messages = await prisma.message.findMany({
@@ -32,6 +32,9 @@ export async function GET(
           }
         }
       },
+      include: {
+        statuses: true
+      },
       orderBy: {
         createdAt: "asc"
       }
@@ -40,6 +43,7 @@ export async function GET(
     return NextResponse.json(messages);
 
   } catch (error) {
+
     console.error("GET MESSAGES ERROR:", error);
 
     return NextResponse.json(

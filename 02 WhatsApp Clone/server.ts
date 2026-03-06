@@ -1,3 +1,5 @@
+// server.ts
+
 import next from "next"
 import http from "http"
 import { Server } from "socket.io"
@@ -37,33 +39,72 @@ app.prepare().then(() => {
     console.log("Socket connected:", socket.id)
 
     socket.on("user-online", (userId: string) => {
-
       onlineUsers.set(userId, socket.id)
-
       io.emit("online-users", Array.from(onlineUsers.keys()))
-
     })
 
-    socket.on("join-chat", (chatId: string) => {
+    /*
+    JOIN CHAT
+    */
+
+    socket.on("join-chat", async ({ chatId, userId }) => {
 
       const rooms = [...socket.rooms]
 
       for (const room of rooms) {
-        if (room !== socket.id) {
-          socket.leave(room)
-        }
+        if (room !== socket.id) socket.leave(room)
       }
 
       socket.join(chatId)
 
-      console.log("User joined chat:", chatId)
+      await prisma.messageStatus.updateMany({
+        where: {
+          userId,
+          delivered: false,
+          message: { chatId }
+        },
+        data: { delivered: true }
+      })
+
+      io.to(chatId).emit("messages-delivered", { chatId })
 
     })
+
+    /*
+    RESET UNREAD
+    */
+
+    socket.on("reset-unread", async ({ chatId, userId }) => {
+
+      await prisma.chatMember.updateMany({
+        where: { chatId, userId },
+        data: { unreadCount: 0 }
+      })
+
+      io.emit("unread-reset", { chatId, userId })
+
+    })
+
+    /*
+    TYPING
+    */
+
+    socket.on("typing", (data) => {
+
+      socket.to(data.chatId).emit("typing", {
+        userId: data.userId
+      })
+
+    })
+
+    /*
+    SEND MESSAGE
+    */
 
     socket.on("send-message", async (data) => {
 
       try {
-        console.log("Saving message in chat:", data.chatId)
+
         const message = await prisma.message.create({
           data: {
             content: data.content,
@@ -72,7 +113,53 @@ app.prepare().then(() => {
           }
         })
 
-        io.to(data.chatId).emit("receive-message", message)
+        const members = await prisma.chatMember.findMany({
+          where: { chatId: data.chatId }
+        })
+
+        for (const m of members) {
+
+          await prisma.messageStatus.create({
+            data: {
+              messageId: message.id,
+              userId: m.userId,
+              delivered: m.userId !== data.userId
+            }
+          })
+
+        }
+
+        const fullMessage = await prisma.message.findUnique({
+          where: { id: message.id },
+          include: { statuses: true }
+        })
+
+        await prisma.chat.update({
+          where: { id: data.chatId },
+          data: { updatedAt: new Date() }
+        })
+
+        await prisma.chatMember.updateMany({
+          where: {
+            chatId: data.chatId,
+            NOT: { userId: data.userId }
+          },
+          data: {
+            unreadCount: { increment: 1 }
+          }
+        })
+
+        /*
+        SINGLE UNREAD EVENT
+        */
+
+        io.emit("chat-unread-update", {
+          chatId: data.chatId,
+          senderId: data.userId,
+          message: fullMessage
+        })
+
+        io.to(data.chatId).emit("receive-message", fullMessage)
 
       }
       catch (err) {
@@ -81,12 +168,29 @@ app.prepare().then(() => {
 
     })
 
+    /*
+    MESSAGE READ
+    */
+
+    socket.on("message-read", async ({ messageId, userId, chatId }) => {
+
+      await prisma.messageStatus.updateMany({
+        where: { messageId, userId },
+        data: { read: true }
+      })
+
+      io.to(chatId).emit("message-read-update", { messageId })
+
+    })
+
+    /*
+    DISCONNECT
+    */
+
     socket.on("disconnect", () => {
 
       for (const [userId, id] of onlineUsers.entries()) {
-        if (id === socket.id) {
-          onlineUsers.delete(userId)
-        }
+        if (id === socket.id) onlineUsers.delete(userId)
       }
 
       io.emit("online-users", Array.from(onlineUsers.keys()))

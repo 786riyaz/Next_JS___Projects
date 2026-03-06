@@ -41,3 +41,5 @@ docker-compose up -d
 
 npx prisma migrate dev
 
+npx prisma migrate dev --name message_status
+npx prisma generate

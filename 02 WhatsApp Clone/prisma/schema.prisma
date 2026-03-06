@@ -1,4 +1,4 @@
-// schema.prisma
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -15,8 +15,9 @@ model User {
   name        String?
   createdAt   DateTime @default(now())
 
-  messages    Message[]
+  messages     Message[]
   memberships  ChatMember[]
+  statuses     MessageStatus[]
 }
 
 model Chat {
@@ -36,8 +37,12 @@ model ChatMember {
   chatId String
   userId String
 
+  unreadCount Int @default(0)
+
   chat Chat @relation(fields: [chatId], references: [id])
   user User @relation(fields: [userId], references: [id])
+
+  @@unique([chatId, userId])
 }
 
 model Message {
@@ -51,5 +56,22 @@ model Message {
   chat Chat @relation(fields: [chatId], references: [id])
   user User @relation(fields: [userId], references: [id])
 
+  statuses MessageStatus[]
+
   @@index([chatId])
+}
+
+model MessageStatus {
+  id        String   @id @default(uuid())
+
+  messageId String
+  userId    String
+
+  delivered Boolean @default(false)
+  read      Boolean @default(false)
+
+  message Message @relation(fields: [messageId], references: [id])
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([messageId, userId])
 }
