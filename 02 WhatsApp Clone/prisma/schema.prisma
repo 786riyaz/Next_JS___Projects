@@ -9,15 +9,15 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(uuid())
-  mobile      String   @unique
-  password    String
-  name        String?
-  createdAt   DateTime @default(now())
+  id        String   @id @default(uuid())
+  mobile    String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
 
-  messages     Message[]
-  memberships  ChatMember[]
-  statuses     MessageStatus[]
+  messages    Message[]
+  memberships ChatMember[]
+  statuses    MessageStatus[]
 }
 
 model Chat {
@@ -27,12 +27,12 @@ model Chat {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members   ChatMember[]
-  messages  Message[]
+  members  ChatMember[]
+  messages Message[]
 }
 
 model ChatMember {
-  id     String @id @default(uuid())
+  id String @id @default(uuid())
 
   chatId String
   userId String
@@ -47,7 +47,8 @@ model ChatMember {
 
 model Message {
   id        String   @id @default(uuid())
-  content   String
+  content   String?
+  imageUrl  String?
   createdAt DateTime @default(now())
 
   chatId String
@@ -62,7 +63,7 @@ model Message {
 }
 
 model MessageStatus {
-  id        String   @id @default(uuid())
+  id String @id @default(uuid())
 
   messageId String
   userId    String

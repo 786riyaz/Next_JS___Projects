@@ -29,7 +29,10 @@ app.prepare().then(() => {
 
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: [
+        "http://localhost:3000",
+        "https://0d137nlv-3000.inc1.devtunnels.ms"
+      ],
       methods: ["GET", "POST"]
     }
   })
@@ -107,7 +110,8 @@ app.prepare().then(() => {
 
         const message = await prisma.message.create({
           data: {
-            content: data.content,
+            content: data.content ?? null,
+            imageUrl: data.imageUrl ?? null,
             chatId: data.chatId,
             userId: data.userId
           }

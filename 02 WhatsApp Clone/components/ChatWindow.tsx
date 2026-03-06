@@ -10,11 +10,12 @@ export default function ChatWindow({ chat, socket, userId }: any) {
   const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [typingUser, setTypingUser] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  // prevent multiple read events
   const readMessagesRef = useRef<Set<string>>(new Set());
 
   const otherUser = chat?.members?.find(
@@ -30,7 +31,7 @@ export default function ChatWindow({ chat, socket, userId }: any) {
   }, [messages]);
 
   /*
-  AUTO FOCUS INPUT
+  AUTO FOCUS
   */
 
   useEffect(() => {
@@ -70,61 +71,13 @@ export default function ChatWindow({ chat, socket, userId }: any) {
 
     };
 
-    const handleDelivered = (data: any) => {
-
-      if (!data || !data.chatId) return;
-
-      setMessages(prev =>
-        prev.map(m => {
-
-          if (m.chatId !== data.chatId) return m;
-
-          return {
-            ...m,
-            statuses: m.statuses?.map((s: any) => ({
-              ...s,
-              delivered: true
-            }))
-          };
-
-        })
-      );
-
-    };
-
-    const handleReadUpdate = ({ messageId }: any) => {
-
-      if (!messageId) return;
-
-      setMessages(prev =>
-        prev.map(m => {
-
-          if (m.id !== messageId) return m;
-
-          return {
-            ...m,
-            statuses: m.statuses?.map((s: any) => ({
-              ...s,
-              read: true
-            }))
-          };
-
-        })
-      );
-
-    };
-
     socket.on("receive-message", handleMessage);
     socket.on("typing", handleTyping);
-    socket.on("messages-delivered", handleDelivered);
-    socket.on("message-read-update", handleReadUpdate);
 
     return () => {
 
       socket.off("receive-message", handleMessage);
       socket.off("typing", handleTyping);
-      socket.off("messages-delivered", handleDelivered);
-      socket.off("message-read-update", handleReadUpdate);
 
     };
 
@@ -139,15 +92,9 @@ export default function ChatWindow({ chat, socket, userId }: any) {
     if (!chat || !socket) return;
 
     setMessages([]);
-
     readMessagesRef.current.clear();
 
     socket.emit("join-chat", {
-      chatId: chat.id,
-      userId
-    });
-
-    socket.emit("reset-unread", {
       chatId: chat.id,
       userId
     });
@@ -159,17 +106,13 @@ export default function ChatWindow({ chat, socket, userId }: any) {
     })
       .then(res => res.json())
       .then(data => {
-
-        if (Array.isArray(data)) {
-          setMessages(data);
-        }
-
+        if (Array.isArray(data)) setMessages(data);
       });
 
   }, [chat?.id]);
 
   /*
-  SEND MESSAGE
+  SEND TEXT
   */
 
   const sendMessage = () => {
@@ -187,28 +130,46 @@ export default function ChatWindow({ chat, socket, userId }: any) {
   };
 
   /*
-  TYPING
+  SEND IMAGE
   */
 
-  const handleTyping = (value: string) => {
+  const sendImage = async (file: File) => {
 
-    setInput(value);
+    try {
 
-    socket.emit("typing", {
-      chatId: chat.id,
-      userId
-    });
+      setUploading(true);
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      const data = await res.json();
+
+      socket.emit("send-message", {
+        imageUrl: data.url,
+        chatId: chat.id,
+        userId
+      });
+
+    } catch (err) {
+      console.error("Image upload failed", err);
+    }
+
+    setUploading(false);
 
   };
 
   /*
-  MARK MESSAGE READ (OPTIMIZED)
+  MARK READ
   */
 
   const markAsRead = (message: any) => {
 
     if (!socket) return;
-
     if (message.userId === userId) return;
 
     if (readMessagesRef.current.has(message.id)) return;
@@ -223,12 +184,7 @@ export default function ChatWindow({ chat, socket, userId }: any) {
 
   };
 
-  /*
-  EMPTY CHAT
-  */
-
   if (!chat) {
-
     return (
       <div
         style={{
@@ -243,12 +199,7 @@ export default function ChatWindow({ chat, socket, userId }: any) {
         Select a chat to start messaging
       </div>
     );
-
   }
-
-  /*
-  UI
-  */
 
   return (
 
@@ -320,14 +271,43 @@ export default function ChatWindow({ chat, socket, userId }: any) {
           display: "flex",
           padding: 10,
           background: "#111b21",
-          borderTop: "1px solid #2a2f32"
+          borderTop: "1px solid #2a2f32",
+          gap: 8
         }}
       >
+
+        {/* IMAGE BUTTON */}
+
+        <button
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+          style={{
+            padding: "10px",
+            background: "#202c33",
+            border: "none",
+            borderRadius: 6,
+            color: "white",
+            cursor: "pointer"
+          }}
+        >
+          📎
+        </button>
+
+        <input
+          type="file"
+          ref={fileRef}
+          hidden
+          accept="image/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) sendImage(file);
+          }}
+        />
 
         <input
           ref={inputRef}
           value={input}
-          onChange={(e) => handleTyping(e.target.value)}
+          onChange={(e) => setInput(e.target.value)}
           placeholder="Type message"
           onKeyDown={(e) => {
             if (e.key === "Enter") sendMessage();
@@ -343,16 +323,16 @@ export default function ChatWindow({ chat, socket, userId }: any) {
         />
 
         <button
+          disabled={uploading}
           onClick={sendMessage}
           style={{
-            marginLeft: 10,
             padding: "10px 16px",
             background: "#25D366",
             border: "none",
             borderRadius: 6
           }}
         >
-          Send
+          {uploading ? "Uploading..." : "Send"}
         </button>
 
       </div>

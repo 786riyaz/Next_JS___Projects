@@ -10,7 +10,7 @@ export default function Sidebar({
   setChats,
   onSelect,
   onCreateChat,
-  socket
+  socket,
 }: any) {
   const [users, setUsers] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -30,44 +30,44 @@ export default function Sidebar({
   SOCKET LIVE UPDATES
   */
 
-/*
+  /*
 SOCKET LIVE UPDATES
 */
 
-useEffect(() => {
-  if (!socket) return;
+  useEffect(() => {
+    if (!socket) return;
 
-  const handleUnread = ({ chatId, senderId, message }: any) => {
-    if (senderId === currentUser?.id) return;
+    const handleUnread = ({ chatId, senderId, message }: any) => {
+      if (senderId === currentUser?.id) return;
 
-    setChats((prev: any[]) =>
-      prev.map((chat) => {
-        if (chat.id !== chatId) return chat;
+      setChats((prev: any[]) =>
+        prev.map((chat) => {
+          if (chat.id !== chatId) return chat;
 
-        const updatedMembers = chat.members.map((m: any) => {
-          if (m.userId === currentUser.id) {
-            return {
-              ...m,
-              unreadCount: (m.unreadCount || 0) + 1,
-            };
-          }
+          const updatedMembers = chat.members.map((m: any) => {
+            if (m.userId === currentUser.id) {
+              return {
+                ...m,
+                unreadCount: (m.unreadCount || 0) + 1,
+              };
+            }
 
-          return m;
-        });
+            return m;
+          });
 
-        return {
-          ...chat,
-          members: updatedMembers,
-          messages: [message],
-        };
-      }),
-    );
-  };
+          return {
+            ...chat,
+            members: updatedMembers,
+            messages: [message],
+          };
+        }),
+      );
+    };
 
-  socket.on("chat-unread-update", handleUnread);
+    socket.on("chat-unread-update", handleUnread);
 
-  return () => socket.off("chat-unread-update", handleUnread);
-}, [socket, currentUser]);
+    return () => socket.off("chat-unread-update", handleUnread);
+  }, [socket, currentUser]);
 
   useEffect(() => {
     if (!token) return;
@@ -80,6 +80,28 @@ useEffect(() => {
       .then((res) => res.json())
       .then(setUsers);
   }, [token]);
+
+  const createPersonalChat = async (targetUserId: string) => {
+
+  const res = await fetch("/api/chat/personal", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ targetUserId })
+  })
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    console.error(data)
+    return
+  }
+
+  onCreateChat(data)
+
+}
 
   return (
     <div
@@ -162,6 +184,27 @@ useEffect(() => {
             </div>
           );
         })}
+      </div>
+
+      <div style={{ borderTop: "1px solid #2a2f32" }}>
+        <div style={{ padding: 12, fontWeight: "bold" }}>Start new chat</div>
+
+        {users
+          .filter((u) => u.id !== currentUser?.id)
+          .map((u: any) => (
+            <div
+              key={u.id}
+              onClick={() => createPersonalChat(u.id)}
+              style={{
+                padding: 12,
+                cursor: "pointer",
+                borderBottom: "1px solid #2a2f32",
+                color: "#25D366",
+              }}
+            >
+              {u.name || u.mobile}
+            </div>
+          ))}
       </div>
     </div>
   );

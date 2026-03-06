@@ -16,7 +16,10 @@ export const useSocket = () => {
 
     if (socketRef.current) return
 
-    const socketInstance = io("http://localhost:3000", {
+    // Use current origin instead of localhost
+    const socketUrl = window.location.origin
+
+    const socketInstance = io(socketUrl, {
       auth: { token },
       transports: ["websocket"]
     })
