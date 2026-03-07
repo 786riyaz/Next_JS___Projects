@@ -189,6 +189,7 @@ export default function ChatWindow({ chat, socket, userId }: any) {
       <div
         style={{
           flex: 1,
+          width: "100%",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",

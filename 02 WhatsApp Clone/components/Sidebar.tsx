@@ -106,7 +106,8 @@ SOCKET LIVE UPDATES
   return (
     <div
       style={{
-        width: 320,
+        width:"100%",
+        maxWidth: 320,
         background: "#111b21",
         borderRight: "1px solid #2a2f32",
         display: "flex",

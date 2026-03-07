@@ -1,8 +1,6 @@
 // app/chat/page.tsx
 "use client";
 
-"use client";
-
 import { useEffect, useState } from "react";
 import Sidebar from "@/components/Sidebar";
 import ChatWindow from "@/components/ChatWindow";
@@ -14,6 +12,7 @@ export default function ChatPage() {
 
   const [chats, setChats] = useState<any[]>([]);
   const [selectedChat, setSelectedChat] = useState<any>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   const socket = useSocket();
 
@@ -22,7 +21,25 @@ export default function ChatPage() {
   const userId = user?.id;
 
   /*
-  LOAD USER CHATS
+  MOBILE DETECTION
+  */
+
+  useEffect(() => {
+
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+
+    window.addEventListener("resize", checkMobile);
+
+    return () => window.removeEventListener("resize", checkMobile);
+
+  }, []);
+
+  /*
+  LOAD CHATS
   */
 
   useEffect(() => {
@@ -43,90 +60,58 @@ export default function ChatPage() {
   }, [token]);
 
   /*
-  LIVE MESSAGE UPDATE
+  LIVE UPDATE
   */
 
-useEffect(() => {
+  useEffect(() => {
 
-  if (!socket) return;
+    if (!socket) return;
 
-  const handleUnreadUpdate = ({ chatId, senderId, message }: any) => {
+    const handleUnreadUpdate = ({ chatId, senderId, message }: any) => {
 
-    setChats((prev) =>
-      prev
-        .map((chat) => {
+      setChats((prev) =>
+        prev
+          .map((chat) => {
 
-          if (chat.id !== chatId) return chat;
+            if (chat.id !== chatId) return chat;
 
-          const updatedMembers = chat.members.map((m: any) => {
+            const updatedMembers = chat.members.map((m: any) => {
 
-            if (m.userId === userId && senderId !== userId) {
-              return {
-                ...m,
-                unreadCount: (m.unreadCount || 0) + 1
-              };
-            }
+              if (m.userId === userId && senderId !== userId) {
+                return {
+                  ...m,
+                  unreadCount: (m.unreadCount || 0) + 1
+                };
+              }
 
-            return m;
+              return m;
 
-          });
+            });
 
-          return {
-            ...chat,
-            members: updatedMembers,
-            messages: [message]
-          };
+            return {
+              ...chat,
+              members: updatedMembers,
+              messages: [message]
+            };
 
-        })
-        .sort((a, b) => {
+          })
+          .sort((a, b) => {
 
-          const timeA = new Date(a.messages?.[0]?.createdAt || 0).getTime();
-          const timeB = new Date(b.messages?.[0]?.createdAt || 0).getTime();
+            const timeA = new Date(a.messages?.[0]?.createdAt || 0).getTime();
+            const timeB = new Date(b.messages?.[0]?.createdAt || 0).getTime();
 
-          return timeB - timeA;
+            return timeB - timeA;
 
-        })
-    );
+          })
+      );
 
-  };
+    };
 
-  const handleUnreadReset = ({ chatId, userId: resetUser }: any) => {
+    socket.on("chat-unread-update", handleUnreadUpdate);
 
-    if (resetUser !== userId) return;
+    return () => socket.off("chat-unread-update", handleUnreadUpdate);
 
-    setChats((prev) =>
-      prev.map((chat) => {
-
-        if (chat.id !== chatId) return chat;
-
-        const members = chat.members.map((m: any) => {
-
-          if (m.userId === userId) {
-            return { ...m, unreadCount: 0 };
-          }
-
-          return m;
-
-        });
-
-        return { ...chat, members };
-
-      })
-    );
-
-  };
-
-  socket.on("chat-unread-update", handleUnreadUpdate);
-  socket.on("unread-reset", handleUnreadReset);
-
-  return () => {
-
-    socket.off("chat-unread-update", handleUnreadUpdate);
-    socket.off("unread-reset", handleUnreadReset);
-
-  };
-
-}, [socket, userId]);
+  }, [socket, userId]);
 
   /*
   CREATE CHAT
@@ -153,22 +138,34 @@ useEffect(() => {
 
   return (
 
-    <div style={{ display: "flex", height: "100vh" }}>
+    <div className="chat-layout">
 
-      <Sidebar
-        chats={chats}
-        setChats={setChats}
-        onSelect={setSelectedChat}
-        onCreateChat={handleCreateChat}
-        socket={socket}
-      />
+      {/* SIDEBAR */}
 
-      <ChatWindow
-        key={selectedChat?.id}
-        chat={selectedChat}
-        socket={socket}
-        userId={userId}
-      />
+      {(!isMobile || !selectedChat) && (
+
+        <Sidebar
+          chats={chats}
+          setChats={setChats}
+          onSelect={setSelectedChat}
+          onCreateChat={handleCreateChat}
+          socket={socket}
+        />
+
+      )}
+
+      {/* CHAT WINDOW */}
+
+      {(!isMobile || selectedChat) && (
+
+        <ChatWindow
+          key={selectedChat?.id}
+          chat={selectedChat}
+          socket={socket}
+          userId={userId}
+        />
+
+      )}
 
     </div>
 
