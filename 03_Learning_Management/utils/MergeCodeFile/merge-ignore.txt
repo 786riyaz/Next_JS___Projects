@@ -1,0 +1,32 @@
+Development Packages :::
+node_modules
+.git
+.next
+dist
+build
+=============================================================
+Documentations :::
+000 Docs
+000 UT
+README.md
+=============================================================
+Images :::
+public
+storage
+=============================================================
+Development Files ::
+.gitignore
+.env.local
+package-lock.json
+package.json---INCLUDE
+eslint.config.mjs---INCLUDE
+next-env.d.ts---INCLUDE
+next.config.ts---INCLUDE
+postcss.config.mjs---INCLUDE
+tsconfig.json---INCLUDE
+=============================================================
+Merge Files :::
+utils
+
+*.xlsx
+favicon.ico
