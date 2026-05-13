@@ -5,34 +5,28 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import ComboBox from "@/components/ComboBox";
 import moduleOrder from "../moduleOrder.js";
+import { DOMAIN_COLORS, buildDomainColorMap } from "@/lib/domainColors";
 
-// ── Fixed domain order ──────────────────────────────────────────────────────
 const DOMAIN_ORDER = moduleOrder.DOMAIN_ORDER;
-
 const norm = (s) => s.toLowerCase().replace(/[\s/]/g, "");
 const DOMAIN_ORDER_NORM = DOMAIN_ORDER.map(norm);
 
 function domainIndex(d) {
   const n = norm(d);
-  return DOMAIN_ORDER_NORM.indexOf(n);
+  const i = DOMAIN_ORDER_NORM.indexOf(n);
+  return i === -1 ? 999 : i;
 }
-
 function sortDomains(domains) {
   return [...domains].sort((a, b) => {
-    const ai = domainIndex(a);
-    const bi = domainIndex(b);
-    if (ai === -1 && bi === -1) return a.localeCompare(b);
-    if (ai === -1) return 1;
-    if (bi === -1) return -1;
+    const ai = domainIndex(a), bi = domainIndex(b);
+    if (ai === bi) return a.localeCompare(b);
     return ai - bi;
   });
 }
-
 function SortIcon({ field, sortConfig }) {
   if (sortConfig.field !== field) return <span className="ml-1 text-gray-400 text-xs">↕</span>;
   return <span className="ml-1 text-xs">{sortConfig.dir === "asc" ? "↑" : "↓"}</span>;
 }
-
 function getPaginationRange(current, total) {
   const maxVisible = 10;
   if (total <= maxVisible) return Array.from({ length: total }, (_, i) => i + 1);
@@ -68,13 +62,24 @@ export default function PrioritiesPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/priorities");
-      const data = await res.json();
-      setPriorities(data);
+      setPriorities(await res.json());
     } catch { showToast("Failed to load priorities", "error"); }
     finally { setLoading(false); }
   }
 
   useEffect(() => { fetchPriorities(); /* eslint-disable-next-line */ }, []);
+
+  const uniqueDomains = useMemo(() =>
+    sortDomains([...new Set(priorities.map((p) => p.domain).filter(Boolean))]),
+    [priorities]
+  );
+
+  const domainColorMap = useMemo(() => buildDomainColorMap(uniqueDomains), [uniqueDomains]);
+
+  const uniqueTopicsForDomain = useMemo(() => {
+    const source = formData.domain ? priorities.filter((p) => p.domain === formData.domain) : priorities;
+    return [...new Set(source.map((p) => p.topic).filter(Boolean))].sort();
+  }, [priorities, formData.domain]);
 
   function isDuplicateDomainTopic(domain, topic, excludeId = null) {
     return priorities.some(
@@ -83,20 +88,9 @@ export default function PrioritiesPage() {
         && p._id !== excludeId
     );
   }
-
   function isDuplicateLearnPriority(learnPriority, excludeId = null) {
     return priorities.some((p) => Number(p.learnPriority) === Number(learnPriority) && p._id !== excludeId);
   }
-
-  // ── Sorted unique domains following DOMAIN_ORDER ─────────────────────────
-  const uniqueDomains = useMemo(() => {
-    return sortDomains([...new Set(priorities.map((p) => p.domain).filter(Boolean))]);
-  }, [priorities]);
-
-  const uniqueTopicsForDomain = useMemo(() => {
-    const source = formData.domain ? priorities.filter((p) => p.domain === formData.domain) : priorities;
-    return [...new Set(source.map((p) => p.topic).filter(Boolean))].sort();
-  }, [priorities, formData.domain]);
 
   function handleChange(e) {
     const { name, value } = e.target;
@@ -164,6 +158,30 @@ export default function PrioritiesPage() {
     setCurrentPage(1);
   }
 
+  // ── Up/Down reorder: swap learnPriority values between two rows ──────────
+  async function handleReorder(item, direction) {
+    const list = filteredSorted; // current sorted view
+    const idx = list.findIndex((p) => p._id === item._id);
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= list.length) return;
+
+    const other = list[swapIdx];
+    // Swap learnPriority values
+    const [newA, newB] = [other.learnPriority, item.learnPriority];
+    try {
+      await Promise.all([
+        fetch(`/api/priorities/${item._id}`,  { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...item,  learnPriority: newA }) }),
+        fetch(`/api/priorities/${other._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...other, learnPriority: newB }) }),
+      ]);
+      // Optimistic update in local state
+      setPriorities((prev) => prev.map((p) => {
+        if (p._id === item._id)  return { ...p, learnPriority: newA };
+        if (p._id === other._id) return { ...p, learnPriority: newB };
+        return p;
+      }));
+    } catch { showToast("Reorder failed", "error"); }
+  }
+
   const filteredSorted = useMemo(() => {
     let list = priorities.filter((item) => {
       const q = search.toLowerCase();
@@ -186,7 +204,6 @@ export default function PrioritiesPage() {
   const safePage = Math.min(currentPage, totalPages);
   const paginated = filteredSorted.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
   const pageNumbers = getPaginationRange(safePage, totalPages);
-
   useEffect(() => { setCurrentPage(1); }, [search, selectedDomain, sortConfig]);
 
   const domainCount = uniqueDomains.length;
@@ -217,7 +234,7 @@ export default function PrioritiesPage() {
       if (!toInsert.length) { showToast(`⚠️ All ${formatted.length} rows skipped — duplicates found.`, "error"); return; }
       try {
         for (const item of toInsert) await fetch("/api/priorities", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(item) });
-        showToast(skipped.length ? `Imported ${toInsert.length} priorities. Skipped ${skipped.length} duplicate(s).` : `Imported ${toInsert.length} priorities successfully.`, skipped.length ? "warn" : "success");
+        showToast(skipped.length ? `Imported ${toInsert.length} priorities. Skipped ${skipped.length} duplicate(s).` : `Imported ${toInsert.length} priorities successfully.`);
         fetchPriorities();
       } catch { showToast("Import failed", "error"); }
     };
@@ -235,6 +252,9 @@ export default function PrioritiesPage() {
     priorities.find((p) => p.domain.trim().toLowerCase() === formData.domain.trim().toLowerCase()
       && p.topic.trim().toLowerCase() === formData.topic.trim().toLowerCase());
 
+  // Up/down only works when sorted by learnPriority asc (natural order)
+  const isReorderMode = sortConfig.field === "learnPriority" && sortConfig.dir === "asc" && !search && !selectedDomain;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {toast && (
@@ -243,10 +263,10 @@ export default function PrioritiesPage() {
         </div>
       )}
       <div className="p-6 max-w-screen-xl mx-auto">
-        {/* ── Header ── */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Priorities</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📋 Domain Priorities</h1>
             <p className="text-sm text-gray-500 mt-1">{topicCount} topics across {domainCount} domains</p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -262,7 +282,7 @@ export default function PrioritiesPage() {
           </div>
         </div>
 
-        {/* ── Form ── */}
+        {/* Form */}
         {formOpen && (
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">{editingId ? "✏️ Edit Priority" : "➕ Add New Priority"}</h2>
@@ -277,39 +297,22 @@ export default function PrioritiesPage() {
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Topic *</label>
                 <ComboBox name="topic" value={formData.topic} onChange={handleChange} options={uniqueTopicsForDomain} placeholder="Search or type topic…" required className={inputCls} />
-                {formData.domain && (
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {uniqueTopicsForDomain.length > 0 ? `Showing topics in "${formData.domain}"` : "No existing topics for this domain"}
-                  </p>
-                )}
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Module Order *{topicHasSavedData && <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span>}
-                </label>
-                <input
-                  type="number" step="0.1" name="moduleOrder" placeholder="e.g. 1.2"
-                  value={formData.moduleOrder} onChange={handleChange} required
-                  className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${topicHasSavedData ? "bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"}`}
-                />
-                {topicHasSavedData && <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Auto-filled from existing data</p>}
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Module Order *</label>
+                <input type="number" step="0.1" name="moduleOrder" placeholder="e.g. 1.2" value={formData.moduleOrder} onChange={handleChange} required
+                  className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${topicHasSavedData ? "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800"} text-gray-900 dark:text-white`} />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Learn Priority *{topicHasSavedData && <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span>}
-                </label>
-                <input
-                  type="number" name="learnPriority" placeholder="e.g. 5"
-                  value={formData.learnPriority} onChange={handleChange} required
-                  className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${topicHasSavedData ? "bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"}`}
-                />
-                {topicHasSavedData && <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">⚠ This domain+topic already exists — editing will update it</p>}
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Learn Priority *</label>
+                <input type="number" name="learnPriority" placeholder="e.g. 5" value={formData.learnPriority} onChange={handleChange} required
+                  className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${topicHasSavedData ? "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800"} text-gray-900 dark:text-white`} />
               </div>
               <div className="flex gap-3 sm:col-span-2 lg:col-span-4">
-                <button type="submit" disabled={submitting} className="flex-1 sm:flex-none sm:w-40 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors">
+                <button type="submit" disabled={submitting} className="flex-1 sm:flex-none sm:w-40 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 px-4 rounded-lg text-sm font-medium">
                   {submitting ? "Saving…" : editingId ? "Update" : "Add Priority"}
                 </button>
-                <button type="button" onClick={resetForm} className="flex-1 sm:flex-none sm:w-32 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors">
+                <button type="button" onClick={resetForm} className="flex-1 sm:flex-none sm:w-32 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-2.5 px-4 rounded-lg text-sm font-medium">
                   Cancel
                 </button>
               </div>
@@ -317,30 +320,29 @@ export default function PrioritiesPage() {
           </div>
         )}
 
-        {/* ── Filters ── */}
+        {/* Filters */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-4 shadow-sm">
           <div className="flex flex-col gap-3">
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
-              <input type="text" placeholder="Search domain or topic…" value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-9 pr-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400" />
+              <input type="text" placeholder="Search domain or topic…" value={search} onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none" />
             </div>
-            {/* Domain Buttons — ordered by DOMAIN_ORDER */}
             <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={() => setSelectedDomain("")}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${!selectedDomain ? "bg-indigo-600 text-white border-indigo-600" : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
-              >
+              <button onClick={() => setSelectedDomain("")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${!selectedDomain ? "bg-gray-700 text-white border-gray-700" : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
                 All Domains
               </button>
-              {uniqueDomains.map((d) => (
-                <button
-                  key={d}
-                  onClick={() => setSelectedDomain(selectedDomain === d ? "" : d)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selectedDomain === d ? "bg-indigo-600 text-white border-indigo-600" : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
-                >
-                  {d}
-                </button>
-              ))}
+              {uniqueDomains.map((d) => {
+                const color = domainColorMap[d] || DOMAIN_COLORS[0];
+                const isSelected = selectedDomain === d;
+                return (
+                  <button key={d} onClick={() => setSelectedDomain(selectedDomain === d ? "" : d)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1.5 ${isSelected ? `${color.bg} ${color.text} border-transparent font-bold` : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />{d}
+                  </button>
+                );
+              })}
             </div>
           </div>
           {(search || selectedDomain) && (
@@ -350,17 +352,22 @@ export default function PrioritiesPage() {
               <button onClick={() => { setSearch(""); setSelectedDomain(""); }} className="text-xs text-gray-500 hover:text-red-500 underline">Clear all</button>
             </div>
           )}
-          <p className="text-xs text-gray-400 mt-2">Showing {filteredSorted.length} of {topicCount} priorities</p>
+          <div className="flex items-center justify-between mt-2">
+            <p className="text-xs text-gray-400">Showing {filteredSorted.length} of {topicCount} priorities</p>
+            {!isReorderMode && (
+              <p className="text-xs text-amber-500">⚠ Clear filters &amp; sort by Learn Priority ↑ to enable reorder buttons</p>
+            )}
+          </div>
         </div>
 
-        {/* ── Table ── */}
+        {/* Table */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-20 text-gray-400"><span className="animate-spin mr-2">⟳</span> Loading priorities…</div>
           ) : paginated.length === 0 ? (
             <div className="py-20 text-center text-gray-400">
               <div className="text-4xl mb-3">📋</div>
-              <p className="text-sm">No priorities found. Try adjusting your filters.</p>
+              <p className="text-sm">No priorities found.</p>
               <button onClick={() => setFormOpen(true)} className="mt-4 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg">Add First Priority</button>
             </div>
           ) : (
@@ -377,45 +384,70 @@ export default function PrioritiesPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {paginated.map((item, idx) => (
-                    <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                      <td className="px-4 py-3 text-center text-xs text-gray-400">{(safePage - 1) * itemsPerPage + idx + 1}</td>
-                      <td className="px-4 py-3"><span className="inline-block bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 text-xs font-medium px-2 py-0.5 rounded">{item.domain}</span></td>
-                      <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{item.topic}</td>
-                      <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{item.moduleOrder}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-block text-xs font-bold px-2.5 py-0.5 rounded-full ${item.learnPriority <= 3 ? "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400" : item.learnPriority <= 6 ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400" : "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400"}`}>
-                          {item.learnPriority}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-2 justify-end">
-                          <button onClick={() => handleEdit(item)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded transition-colors">Edit</button>
-                          <button onClick={() => handleDelete(item._id)} className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition-colors">Delete</button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {paginated.map((item, idx) => {
+                    const color = domainColorMap[item.domain] || DOMAIN_COLORS[0];
+                    const globalIdx = (safePage - 1) * itemsPerPage + idx;
+                    return (
+                      <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+                        <td className="px-4 py-3 text-center text-xs text-gray-400">{globalIdx + 1}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded ${color.bg} ${color.text}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />{item.domain}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{item.topic}</td>
+                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{item.moduleOrder}</td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-block text-xs font-bold px-2.5 py-0.5 rounded-full ${item.learnPriority <= 3 ? "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400" : item.learnPriority <= 6 ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400" : "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400"}`}>
+                            {item.learnPriority}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-1.5 justify-end items-center">
+                            {/* Up/Down reorder — only shown in natural sort mode */}
+                            {isReorderMode && (
+                              <>
+                                <button
+                                  onClick={() => handleReorder(item, "up")}
+                                  disabled={globalIdx === 0}
+                                  title="Move up"
+                                  className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-30 text-gray-700 dark:text-gray-300 text-xs px-2 py-1.5 rounded transition-colors"
+                                >▲</button>
+                                <button
+                                  onClick={() => handleReorder(item, "down")}
+                                  disabled={globalIdx === filteredSorted.length - 1}
+                                  title="Move down"
+                                  className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-30 text-gray-700 dark:text-gray-300 text-xs px-2 py-1.5 rounded transition-colors"
+                                >▼</button>
+                              </>
+                            )}
+                            <button onClick={() => handleEdit(item)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded transition-colors">Edit</button>
+                            <button onClick={() => handleDelete(item._id)} className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition-colors">Delete</button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
           )}
         </div>
 
-        {/* ── Pagination ── */}
+        {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 flex-wrap gap-2">
             <p className="text-xs text-gray-500">Page {safePage} of {totalPages} ({filteredSorted.length} results)</p>
             <div className="flex flex-wrap gap-1">
-              <button onClick={() => setCurrentPage(1)} disabled={safePage === 1} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40 hover:bg-gray-300 dark:hover:bg-gray-700">«</button>
-              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40 hover:bg-gray-300 dark:hover:bg-gray-700">‹</button>
+              <button onClick={() => setCurrentPage(1)} disabled={safePage === 1} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">«</button>
+              <button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">‹</button>
               {pageNumbers[0] > 1 && <span className="px-2 py-1.5 text-xs text-gray-400">…</span>}
               {pageNumbers.map((p) => (
-                <button key={p} onClick={() => setCurrentPage(p)} className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${p === safePage ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-800 hover:bg-gray-300 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"}`}>{p}</button>
+                <button key={p} onClick={() => setCurrentPage(p)} className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${p === safePage ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300"}`}>{p}</button>
               ))}
               {pageNumbers[pageNumbers.length - 1] < totalPages && <span className="px-2 py-1.5 text-xs text-gray-400">…</span>}
-              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40 hover:bg-gray-300 dark:hover:bg-gray-700">›</button>
-              <button onClick={() => setCurrentPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40 hover:bg-gray-300 dark:hover:bg-gray-700">»</button>
+              <button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">›</button>
+              <button onClick={() => setCurrentPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">»</button>
             </div>
           </div>
         )}

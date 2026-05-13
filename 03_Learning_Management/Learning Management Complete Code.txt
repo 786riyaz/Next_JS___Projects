@@ -1,0 +1,2417 @@
+// app\api\links\route.js
+// app/api/links/route.js
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Link from "@/models/Link";
+export async function GET() {
+try {
+await connectDB();
+const links = await Link.find().sort({ category: 1, topic: 1 });
+return NextResponse.json(links);
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+export async function POST(request) {
+try {
+await connectDB();
+const body = await request.json();
+const newLink = await Link.create(body);
+return NextResponse.json(newLink);
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+====================================================================
+// app\api\links\[id]\route.js
+// app/api/links/[id]/route.js
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Link from "@/models/Link";
+export async function PUT(request, { params }) {
+try {
+await connectDB();
+const { id } = await params;
+const body = await request.json();
+const updated = await Link.findByIdAndUpdate(id, body, { returnDocument: "after" });
+return NextResponse.json(updated);
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+export async function DELETE(request, { params }) {
+try {
+await connectDB();
+const { id } = await params;
+await Link.findByIdAndDelete(id);
+return NextResponse.json({ success: true });
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+====================================================================
+// app\api\notes\route.js
+// app/api/notes/route.js
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Note from "@/models/Note";
+export async function GET() {
+try {
+await connectDB();
+const notes = await Note.find().sort({ pinned: -1, updatedAt: -1 });
+return NextResponse.json(notes);
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+export async function POST(request) {
+try {
+await connectDB();
+const body = await request.json();
+const newNote = await Note.create(body);
+return NextResponse.json(newNote);
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+====================================================================
+// app\api\notes\[id]\route.js
+// app/api/notes/[id]/route.js
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Note from "@/models/Note";
+export async function PUT(request, { params }) {
+try {
+await connectDB();
+const { id } = await params;
+const body = await request.json();
+const updated = await Note.findByIdAndUpdate(id, body, { returnDocument: "after" });
+return NextResponse.json(updated);
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+export async function DELETE(request, { params }) {
+try {
+await connectDB();
+const { id } = await params;
+await Note.findByIdAndDelete(id);
+return NextResponse.json({ success: true });
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+====================================================================
+// app\api\priorities\route.js
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Priority from "@/models/Priority";
+
+// =========================
+// GET ALL PRIORITIES
+// =========================
+export async function GET() {
+try {
+await connectDB();
+const priorities =
+await Priority.find().sort({
+learnPriority: 1,
+});
+return NextResponse.json(
+priorities
+);
+} catch (error) {
+return NextResponse.json(
+{
+success: false,
+message: error.message,
+},
+{
+status: 500,
+}
+);
+}
+}
+
+// =========================
+// CREATE PRIORITY
+// =========================
+export async function POST(
+request
+) {
+try {
+await connectDB();
+const body =
+await request.json();
+const newPriority =
+await Priority.create(body);
+return NextResponse.json(
+newPriority
+);
+} catch (error) {
+return NextResponse.json(
+{
+success: false,
+message: error.message,
+},
+{
+status: 500,
+}
+);
+}
+}
+====================================================================
+// app\api\priorities\[id]\route.js
+// app\api\priorities\[id]\route.js
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Priority from "@/models/Priority";
+import Video from "@/models/Video";
+// ======================
+// DELETE PRIORITY
+// ======================
+export async function DELETE(request, { params }) {
+try {
+await connectDB();
+const { id } = await params;
+await Priority.findByIdAndDelete(id);
+return NextResponse.json({ success: true, message: "Priority deleted successfully" });
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+// ======================
+// UPDATE PRIORITY
+// ======================
+export async function PUT(request, { params }) {
+try {
+await connectDB();
+const { id } = await params;
+const body = await request.json();
+const updatedPriority = await Priority.findByIdAndUpdate(id, body, { returnDocument: "after" });
+// Sync new learnPriority to all videos with the same domain+topic
+if (updatedPriority) {
+await Video.updateMany(
+{
+domain: new RegExp(`^${updatedPriority.domain.trim()}$`, "i"),
+topic:  new RegExp(`^${updatedPriority.topic.trim()}$`,  "i"),
+},
+{ priority: updatedPriority.learnPriority }
+);
+}
+return NextResponse.json(updatedPriority);
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+====================================================================
+// app\api\videos\route.js
+// app\api\videos\route.js
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Video from "@/models/Video";
+import Priority from "@/models/Priority";
+// =========================
+// GET ALL VIDEOS
+// =========================
+export async function GET() {
+try {
+await connectDB();
+const [videos, priorities] = await Promise.all([
+Video.find().sort({ priority: 1 }),
+Priority.find(),
+]);
+// Build domain::topic → learnPriority map
+const prioMap = {};
+priorities.forEach((p) => {
+if (p.domain && p.topic) prioMap[`${p.domain}::${p.topic}`] = p.learnPriority;
+});
+// Always return live priority derived from Priority collection
+const merged = videos.map((v) => {
+const obj = v.toObject();
+const key = `${obj.domain || ""}::${obj.topic}`;
+obj.priority = prioMap[key] ?? obj.priority ?? 0;
+return obj;
+});
+return NextResponse.json(merged);
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+// =========================
+// CREATE VIDEO
+// =========================
+export async function POST(request) {
+try {
+await connectDB();
+const body = await request.json();
+// Never trust the priority sent from client — always derive from Priority collection
+const priority = await getLivePriority(body.domain, body.topic);
+const newVideo = await Video.create({ ...body, priority });
+return NextResponse.json(newVideo);
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+async function getLivePriority(domain, topic) {
+if (!domain || !topic) return 0;
+const p = await Priority.findOne({
+domain: new RegExp(`^${domain.trim()}$`, "i"),
+topic:  new RegExp(`^${topic.trim()}$`,  "i"),
+});
+return p?.learnPriority ?? 0;
+}
+====================================================================
+// app\api\videos\[id]\route.js
+// app\api\videos\[id]\route.js
+import { NextResponse } from "next/server";
+import connectDB from "@/lib/mongodb";
+import Video from "@/models/Video";
+import Priority from "@/models/Priority";
+async function getLivePriority(domain, topic) {
+if (!domain || !topic) return 0;
+const p = await Priority.findOne({
+domain: new RegExp(`^${domain.trim()}$`, "i"),
+topic:  new RegExp(`^${topic.trim()}$`,  "i"),
+});
+return p?.learnPriority ?? 0;
+}
+// ======================
+// DELETE VIDEO
+// ======================
+export async function DELETE(request, { params }) {
+try {
+await connectDB();
+const { id } = await params;
+await Video.findByIdAndDelete(id);
+return NextResponse.json({ success: true, message: "Video deleted successfully" });
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+// ======================
+// UPDATE VIDEO
+// ======================
+export async function PUT(request, { params }) {
+try {
+await connectDB();
+const { id } = await params;
+const body = await request.json();
+// Always re-derive priority from Priority collection — ignore client-sent value
+const priority = await getLivePriority(body.domain, body.topic);
+const updatedVideo = await Video.findByIdAndUpdate(
+id,
+{ ...body, priority },
+{ returnDocument: "after" }
+);
+return NextResponse.json(updatedVideo);
+} catch (error) {
+return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+}
+}
+====================================================================
+// app\api\youtube-meta\route.js
+// app/api/youtube-meta/route.js
+import { NextResponse } from "next/server";
+export async function GET(request) {
+const { searchParams } = new URL(request.url);
+const url = searchParams.get("url");
+if (!url) return NextResponse.json({ error: "Missing url" }, { status: 400 });
+try {
+const res = await fetch(
+`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`,
+{ next: { revalidate: 3600 } }
+);
+if (!res.ok) return NextResponse.json({ error: "Not found" }, { status: 404 });
+const data = await res.json();
+return NextResponse.json({ title: data.title, channel: data.author_name });
+} catch {
+return NextResponse.json({ error: "Fetch failed" }, { status: 500 });
+}
+}
+====================================================================
+// app\globals.css
+@import "tailwindcss";
+/* @tailwind base; */
+/* @tailwind components; */
+/* @tailwind utilities; */
+* {
+box-sizing: border-box;
+}
+body {
+margin: 0;
+padding: 0;
+font-family: Arial, Helvetica, sans-serif;
+}
+input,
+select {
+outline: none;
+}
+table {
+border-collapse: collapse;
+}
+====================================================================
+// app\layout.tsx
+import "./globals.css";
+import Sidebar from "@/components/Sidebar";
+export const metadata = {
+title: "Learning Manager",
+description: "Learning Videos Manager",
+};
+export default function RootLayout({ children }) {
+return (
+<html lang="en" className="dark">
+<body className="bg-gray-950 text-white">
+<div className="flex">
+<Sidebar />
+<main className="flex-1 min-h-screen p-8">
+{children}
+</main>
+</div>
+</body>
+</html>
+);
+}
+====================================================================
+// app\links\page.js
+// app/links/page.js
+"use client";
+import { useEffect, useMemo, useState, useCallback } from "react";
+const LINK_COLORS = [
+{ bg: "bg-indigo-100 dark:bg-indigo-900/50", text: "text-indigo-700 dark:text-indigo-300", dot: "bg-indigo-500" },
+{ bg: "bg-emerald-100 dark:bg-emerald-900/50", text: "text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500" },
+{ bg: "bg-orange-100 dark:bg-orange-900/50", text: "text-orange-700 dark:text-orange-300", dot: "bg-orange-500" },
+{ bg: "bg-pink-100 dark:bg-pink-900/50", text: "text-pink-700 dark:text-pink-300", dot: "bg-pink-500" },
+{ bg: "bg-violet-100 dark:bg-violet-900/50", text: "text-violet-700 dark:text-violet-300", dot: "bg-violet-500" },
+{ bg: "bg-cyan-100 dark:bg-cyan-900/50", text: "text-cyan-700 dark:text-cyan-300", dot: "bg-cyan-500" },
+{ bg: "bg-amber-100 dark:bg-amber-900/50", text: "text-amber-700 dark:text-amber-300", dot: "bg-amber-500" },
+{ bg: "bg-teal-100 dark:bg-teal-900/50", text: "text-teal-700 dark:text-teal-300", dot: "bg-teal-500" },
+{ bg: "bg-rose-100 dark:bg-rose-900/50", text: "text-rose-700 dark:text-rose-300", dot: "bg-rose-500" },
+{ bg: "bg-sky-100 dark:bg-sky-900/50", text: "text-sky-700 dark:text-sky-300", dot: "bg-sky-500" },
+];
+const inputCls = "border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 rounded-lg text-sm text-gray-900 dark:text-white w-full outline-none";
+export default function LinksPage() {
+const [links, setLinks] = useState([]);
+const [loading, setLoading] = useState(true);
+const [submitting, setSubmitting] = useState(false);
+const [toast, setToast] = useState(null);
+const [formOpen, setFormOpen] = useState(false);
+const [editingId, setEditingId] = useState(null);
+const [search, setSearch] = useState("");
+const [selectedCategory, setSelectedCategory] = useState("");
+const emptyForm = { category: "", topic: "", subtopic: "", reference: "" };
+const [formData, setFormData] = useState(emptyForm);
+const showToast = useCallback((msg, type = "success") => {
+setToast({ msg, type });
+setTimeout(() => setToast(null), 4000);
+}, []);
+async function fetchLinks() {
+setLoading(true);
+try { const res = await fetch("/api/links"); setLinks(await res.json()); }
+catch { showToast("Failed to load links", "error"); }
+finally { setLoading(false); }
+}
+useEffect(() => { fetchLinks(); /* eslint-disable-next-line */ }, []);
+const uniqueCategories = useMemo(() => [...new Set(links.map((l) => l.category).filter(Boolean))].sort(), [links]);
+const categoryColorMap = useMemo(() => {
+const map = {};
+uniqueCategories.forEach((c, i) => { map[c] = LINK_COLORS[i % LINK_COLORS.length]; });
+return map;
+}, [uniqueCategories]);
+const uniqueTopics = useMemo(() => {
+const source = selectedCategory ? links.filter((l) => l.category === selectedCategory) : links;
+return [...new Set(source.map((l) => l.topic).filter(Boolean))].sort();
+}, [links, selectedCategory]);
+const filtered = useMemo(() => {
+return links.filter((l) => {
+const q = search.toLowerCase();
+const matchSearch = !q || l.category?.toLowerCase().includes(q) || l.topic?.toLowerCase().includes(q) || l.subtopic?.toLowerCase().includes(q) || l.reference?.toLowerCase().includes(q);
+const matchCat = !selectedCategory || l.category === selectedCategory;
+return matchSearch && matchCat;
+});
+}, [links, search, selectedCategory]);
+async function handleSubmit(e) {
+e.preventDefault();
+if (!formData.category || !formData.topic || !formData.reference) { showToast("Category, Topic and Reference are required", "error"); return; }
+setSubmitting(true);
+try {
+const res = editingId
+? await fetch(`/api/links/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) })
+: await fetch("/api/links", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
+if (res.ok) { showToast(editingId ? "Link updated!" : "Link added!"); resetForm(); fetchLinks(); }
+else showToast("Save failed", "error");
+} catch { showToast("Network error", "error"); }
+finally { setSubmitting(false); }
+}
+function handleEdit(item) {
+setEditingId(item._id);
+setFormData({ category: item.category, topic: item.topic, subtopic: item.subtopic || "", reference: item.reference });
+setFormOpen(true);
+window.scrollTo({ top: 0, behavior: "smooth" });
+}
+async function handleDelete(id) {
+if (!window.confirm("Delete this link?")) return;
+try { const res = await fetch(`/api/links/${id}`, { method: "DELETE" }); if (res.ok) { showToast("Link deleted"); fetchLinks(); } }
+catch { showToast("Delete failed", "error"); }
+}
+function resetForm() { setEditingId(null); setFormData(emptyForm); setFormOpen(false); }
+return (
+<div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+{toast && (
+<div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-lg shadow-lg text-white text-sm font-medium max-w-sm ${toast.type === "error" ? "bg-red-600" : "bg-green-600"}`}>
+{toast.msg}
+</div>
+)}
+<div className="p-6 max-w-screen-xl mx-auto">
+{/* ── Header ── */}
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<div>
+<h1 className="text-3xl font-bold text-gray-900 dark:text-white">🔗 Other Learning Links</h1>
+<p className="text-sm text-gray-500 mt-1">{links.length} links across {uniqueCategories.length} categories</p>
+</div>
+<button onClick={() => { setFormOpen((o) => !o); if (formOpen) resetForm(); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+{formOpen ? "✕ Close Form" : "+ Add Link"}
+</button>
+</div>
+{/* ── Form ── */}
+{formOpen && (
+<div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 shadow-sm">
+<h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">{editingId ? "✏️ Edit Link" : "➕ Add New Link"}</h2>
+<form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Category *</label>
+<input list="cat-list" name="category" value={formData.category} onChange={(e) => setFormData((p) => ({ ...p, category: e.target.value }))} placeholder="e.g. API Design, Security" required className={inputCls} />
+<datalist id="cat-list">{uniqueCategories.map((c) => <option key={c} value={c} />)}</datalist>
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Topic *</label>
+<input list="topic-list" name="topic" value={formData.topic} onChange={(e) => setFormData((p) => ({ ...p, topic: e.target.value }))} placeholder="e.g. APIs, JWT, Webhooks" required className={inputCls} />
+<datalist id="topic-list">{uniqueTopics.map((t) => <option key={t} value={t} />)}</datalist>
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Subtopic / Description</label>
+<input name="subtopic" value={formData.subtopic} onChange={(e) => setFormData((p) => ({ ...p, subtopic: e.target.value }))} placeholder="Brief description of the resource" className={inputCls} />
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Reference URL *</label>
+<input type="url" name="reference" value={formData.reference} onChange={(e) => setFormData((p) => ({ ...p, reference: e.target.value }))} placeholder="https://..." required className={inputCls} />
+</div>
+<div className="flex gap-3 sm:col-span-2">
+<button type="submit" disabled={submitting} className="flex-1 sm:flex-none sm:w-40 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors">
+{submitting ? "Saving…" : editingId ? "Update" : "Add Link"}
+</button>
+<button type="button" onClick={resetForm} className="flex-1 sm:flex-none sm:w-32 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors">
+Cancel
+</button>
+</div>
+</form>
+</div>
+)}
+{/* ── Filters ── */}
+<div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-4 shadow-sm">
+<div className="flex flex-col gap-3">
+<div className="relative">
+<span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+<input type="text" placeholder="Search category, topic, description…" value={search} onChange={(e) => setSearch(e.target.value)}
+className="w-full pl-9 pr-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none" />
+</div>
+<div className="flex flex-wrap items-center gap-2">
+<button onClick={() => setSelectedCategory("")}
+className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${!selectedCategory ? "bg-gray-700 text-white border-gray-700" : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+All Categories
+</button>
+{uniqueCategories.map((c) => {
+const color = categoryColorMap[c] || LINK_COLORS[0];
+const isSelected = selectedCategory === c;
+return (
+<button key={c} onClick={() => setSelectedCategory(selectedCategory === c ? "" : c)}
+className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${isSelected ? `${color.bg} ${color.text} border-transparent font-bold` : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+{c}
+</button>
+);
+})}
+</div>
+</div>
+<p className="text-xs text-gray-400 mt-2">Showing {filtered.length} of {links.length} links</p>
+</div>
+{/* ── Table ── */}
+<div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+{loading ? (
+<div className="flex items-center justify-center py-20 text-gray-400"><span className="animate-spin mr-2">⟳</span> Loading links…</div>
+) : filtered.length === 0 ? (
+<div className="py-20 text-center text-gray-400">
+<div className="text-4xl mb-3">🔗</div>
+<p className="text-sm">No links found.</p>
+<button onClick={() => setFormOpen(true)} className="mt-4 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg">Add First Link</button>
+</div>
+) : (
+<div className="overflow-x-auto">
+<table className="w-full text-sm">
+<thead>
+<tr className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-left">
+<th className="px-4 py-3 font-semibold w-8">#</th>
+<th className="px-4 py-3 font-semibold">Category</th>
+<th className="px-4 py-3 font-semibold">Topic</th>
+<th className="px-4 py-3 font-semibold">Subtopic / Description</th>
+<th className="px-4 py-3 font-semibold">Reference</th>
+<th className="px-4 py-3 font-semibold text-right">Actions</th>
+</tr>
+</thead>
+<tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+{filtered.map((item, idx) => {
+const color = categoryColorMap[item.category] || LINK_COLORS[0];
+return (
+<tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td className="px-4 py-3 text-xs text-gray-400">{idx + 1}</td>
+<td className="px-4 py-3">
+<span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded ${color.bg} ${color.text}`}>
+<span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />{item.category}
+</span>
+</td>
+<td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{item.topic}</td>
+<td className="px-4 py-3 text-gray-600 dark:text-gray-400 max-w-xs">{item.subtopic || <span className="text-gray-300 dark:text-gray-600">—</span>}</td>
+<td className="px-4 py-3">
+<a href={item.reference} target="_blank" rel="noopener noreferrer"
+className="text-blue-600 dark:text-blue-400 hover:underline text-xs break-all max-w-xs block truncate"
+title={item.reference}>{item.reference}</a>
+</td>
+<td className="px-4 py-3">
+<div className="flex gap-2 justify-end">
+<button onClick={() => handleEdit(item)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded transition-colors">Edit</button>
+<button onClick={() => handleDelete(item._id)} className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition-colors">Delete</button>
+</div>
+</td>
+</tr>
+);
+})}
+</tbody>
+</table>
+</div>
+)}
+</div>
+</div>
+</div>
+);
+}
+====================================================================
+// app\moduleOrder.js
+// ── Fixed domain order ──────────────────────────────────────────────────────
+const DOMAIN_ORDER = [
+"General",
+"Web Dev",
+"Deployment",
+"AI/LLM",
+"System Design",
+"Other Programming",
+"Personal",
+"Hobbies",
+"Other",
+];
+module.exports = {
+DOMAIN_ORDER,
+};
+====================================================================
+// app\notes\page.js
+// app/notes/page.js
+"use client";
+import { useEffect, useMemo, useState, useCallback } from "react";
+const CATEGORY_COLORS = [
+{ bg: "bg-indigo-100 dark:bg-indigo-900/50",  text: "text-indigo-700 dark:text-indigo-300",  dot: "bg-indigo-500",  card: "border-indigo-300 dark:border-indigo-700"  },
+{ bg: "bg-emerald-100 dark:bg-emerald-900/50", text: "text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500", card: "border-emerald-300 dark:border-emerald-700" },
+{ bg: "bg-orange-100 dark:bg-orange-900/50",   text: "text-orange-700 dark:text-orange-300",   dot: "bg-orange-500",  card: "border-orange-300 dark:border-orange-700"  },
+{ bg: "bg-pink-100 dark:bg-pink-900/50",       text: "text-pink-700 dark:text-pink-300",       dot: "bg-pink-500",    card: "border-pink-300 dark:border-pink-700"      },
+{ bg: "bg-violet-100 dark:bg-violet-900/50",   text: "text-violet-700 dark:text-violet-300",   dot: "bg-violet-500",  card: "border-violet-300 dark:border-violet-700"  },
+{ bg: "bg-cyan-100 dark:bg-cyan-900/50",       text: "text-cyan-700 dark:text-cyan-300",       dot: "bg-cyan-500",    card: "border-cyan-300 dark:border-cyan-700"      },
+{ bg: "bg-amber-100 dark:bg-amber-900/50",     text: "text-amber-700 dark:text-amber-300",     dot: "bg-amber-500",   card: "border-amber-300 dark:border-amber-700"    },
+{ bg: "bg-teal-100 dark:bg-teal-900/50",       text: "text-teal-700 dark:text-teal-300",       dot: "bg-teal-500",    card: "border-teal-300 dark:border-teal-700"      },
+];
+const inputCls = "border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 rounded-lg text-sm text-gray-900 dark:text-white w-full outline-none";
+export default function NotesPage() {
+const [notes, setNotes] = useState([]);
+const [loading, setLoading] = useState(true);
+const [submitting, setSubmitting] = useState(false);
+const [toast, setToast] = useState(null);
+const [formOpen, setFormOpen] = useState(false);
+const [editingId, setEditingId] = useState(null);
+const [search, setSearch] = useState("");
+const [selectedCategory, setSelectedCategory] = useState("");
+const emptyForm = { title: "", content: "", category: "General", pinned: false };
+const [formData, setFormData] = useState(emptyForm);
+const showToast = useCallback((msg, type = "success") => {
+setToast({ msg, type });
+setTimeout(() => setToast(null), 4000);
+}, []);
+async function fetchNotes() {
+setLoading(true);
+try { const res = await fetch("/api/notes"); setNotes(await res.json()); }
+catch { showToast("Failed to load notes", "error"); }
+finally { setLoading(false); }
+}
+useEffect(() => { fetchNotes(); /* eslint-disable-next-line */ }, []);
+const uniqueCategories = useMemo(() => [...new Set(notes.map((n) => n.category).filter(Boolean))].sort(), [notes]);
+const categoryColorMap = useMemo(() => {
+const map = {};
+uniqueCategories.forEach((c, i) => { map[c] = CATEGORY_COLORS[i % CATEGORY_COLORS.length]; });
+return map;
+}, [uniqueCategories]);
+const filtered = useMemo(() => {
+return notes.filter((n) => {
+const q = search.toLowerCase();
+const matchSearch = !q || n.title?.toLowerCase().includes(q) || n.content?.toLowerCase().includes(q) || n.category?.toLowerCase().includes(q);
+const matchCat = !selectedCategory || n.category === selectedCategory;
+return matchSearch && matchCat;
+});
+}, [notes, search, selectedCategory]);
+async function handleSubmit(e) {
+e.preventDefault();
+if (!formData.title) { showToast("Title is required", "error"); return; }
+setSubmitting(true);
+try {
+const res = editingId
+? await fetch(`/api/notes/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) })
+: await fetch("/api/notes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(formData) });
+if (res.ok) { showToast(editingId ? "Note updated!" : "Note added!"); resetForm(); fetchNotes(); }
+else showToast("Save failed", "error");
+} catch { showToast("Network error", "error"); }
+finally { setSubmitting(false); }
+}
+function handleEdit(note) {
+setEditingId(note._id);
+setFormData({ title: note.title, content: note.content || "", category: note.category || "General", pinned: note.pinned || false });
+setFormOpen(true);
+window.scrollTo({ top: 0, behavior: "smooth" });
+}
+async function handleDelete(id) {
+if (!window.confirm("Delete this note?")) return;
+try { const res = await fetch(`/api/notes/${id}`, { method: "DELETE" }); if (res.ok) { showToast("Note deleted"); fetchNotes(); } }
+catch { showToast("Delete failed", "error"); }
+}
+async function togglePin(note) {
+try {
+await fetch(`/api/notes/${note._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...note, pinned: !note.pinned }) });
+fetchNotes();
+} catch { showToast("Update failed", "error"); }
+}
+function resetForm() { setEditingId(null); setFormData(emptyForm); setFormOpen(false); }
+const pinnedNotes = filtered.filter((n) => n.pinned);
+const unpinnedNotes = filtered.filter((n) => !n.pinned);
+return (
+<div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+{toast && (
+<div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-lg shadow-lg text-white text-sm font-medium max-w-sm ${toast.type === "error" ? "bg-red-600" : "bg-green-600"}`}>
+{toast.msg}
+</div>
+)}
+<div className="p-6 max-w-screen-xl mx-auto">
+{/* Header */}
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<div>
+<h1 className="text-3xl font-bold text-gray-900 dark:text-white">📝 Notes</h1>
+<p className="text-sm text-gray-500 mt-1">{notes.length} notes across {uniqueCategories.length} categories</p>
+</div>
+<button onClick={() => { setFormOpen((o) => !o); if (formOpen) resetForm(); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+{formOpen ? "✕ Close Form" : "+ Add Note"}
+</button>
+</div>
+{/* Form */}
+{formOpen && (
+<div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 shadow-sm">
+<h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">{editingId ? "✏️ Edit Note" : "➕ Add New Note"}</h2>
+<form onSubmit={handleSubmit} className="flex flex-col gap-4">
+<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Title *</label>
+<input value={formData.title} onChange={(e) => setFormData((p) => ({ ...p, title: e.target.value }))} placeholder="Note title" required className={inputCls} />
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Category</label>
+<input list="cat-list" value={formData.category} onChange={(e) => setFormData((p) => ({ ...p, category: e.target.value }))} placeholder="e.g. General, Web Dev, Ideas" className={inputCls} />
+<datalist id="cat-list">{uniqueCategories.map((c) => <option key={c} value={c} />)}</datalist>
+</div>
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Content</label>
+<textarea value={formData.content} onChange={(e) => setFormData((p) => ({ ...p, content: e.target.value }))} placeholder="Write your note here… (supports plain text, links, etc.)" rows={6} className={`${inputCls} resize-y`} />
+</div>
+<div className="flex items-center gap-6">
+<label className="flex items-center gap-2 cursor-pointer">
+<input type="checkbox" checked={formData.pinned} onChange={(e) => setFormData((p) => ({ ...p, pinned: e.target.checked }))} className="w-4 h-4 accent-yellow-500" />
+<span className="text-sm text-gray-700 dark:text-gray-300">📌 Pin this note</span>
+</label>
+</div>
+<div className="flex gap-3">
+<button type="submit" disabled={submitting} className="flex-1 sm:flex-none sm:w-40 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 px-4 rounded-lg text-sm font-medium">
+{submitting ? "Saving…" : editingId ? "Update" : "Add Note"}
+</button>
+<button type="button" onClick={resetForm} className="flex-1 sm:flex-none sm:w-32 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-2.5 px-4 rounded-lg text-sm font-medium">
+Cancel
+</button>
+</div>
+</form>
+</div>
+)}
+{/* Filters */}
+<div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-6 shadow-sm">
+<div className="flex flex-col gap-3">
+<div className="relative">
+<span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+<input type="text" placeholder="Search notes…" value={search} onChange={(e) => setSearch(e.target.value)}
+className="w-full pl-9 pr-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none" />
+</div>
+<div className="flex flex-wrap items-center gap-2">
+<button onClick={() => setSelectedCategory("")}
+className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${!selectedCategory ? "bg-gray-700 text-white border-gray-700" : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+All
+</button>
+{uniqueCategories.map((c) => {
+const color = categoryColorMap[c] || CATEGORY_COLORS[0];
+const isSelected = selectedCategory === c;
+return (
+<button key={c} onClick={() => setSelectedCategory(selectedCategory === c ? "" : c)}
+className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1.5 ${isSelected ? `${color.bg} ${color.text} border-transparent font-bold` : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+<span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />{c}
+</button>
+);
+})}
+</div>
+</div>
+<p className="text-xs text-gray-400 mt-2">Showing {filtered.length} of {notes.length} notes</p>
+</div>
+{/* Notes Grid */}
+{loading ? (
+<div className="flex items-center justify-center py-20 text-gray-400"><span className="animate-spin mr-2">⟳</span> Loading notes…</div>
+) : filtered.length === 0 ? (
+<div className="py-20 text-center text-gray-400">
+<div className="text-4xl mb-3">📝</div>
+<p className="text-sm">No notes found.</p>
+<button onClick={() => setFormOpen(true)} className="mt-4 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg">Add First Note</button>
+</div>
+) : (
+<>
+{pinnedNotes.length > 0 && (
+<div className="mb-6">
+<h2 className="text-xs font-bold uppercase tracking-wider text-yellow-600 dark:text-yellow-400 mb-3 flex items-center gap-1.5">
+<span>📌</span> Pinned
+</h2>
+<NoteCards notes={pinnedNotes} categoryColorMap={categoryColorMap} onEdit={handleEdit} onDelete={handleDelete} onPin={togglePin} />
+</div>
+)}
+{unpinnedNotes.length > 0 && (
+<div>
+{pinnedNotes.length > 0 && <h2 className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">Other Notes</h2>}
+<NoteCards notes={unpinnedNotes} categoryColorMap={categoryColorMap} onEdit={handleEdit} onDelete={handleDelete} onPin={togglePin} />
+</div>
+)}
+</>
+)}
+</div>
+</div>
+);
+}
+function NoteCards({ notes, categoryColorMap, onEdit, onDelete, onPin }) {
+return (
+<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+{notes.map((note) => {
+const color = categoryColorMap[note.category] || CATEGORY_COLORS[0];
+return (
+<div key={note._id} className={`bg-white dark:bg-gray-900 border-2 ${note.pinned ? color.card : "border-gray-200 dark:border-gray-800"} rounded-xl p-4 shadow-sm flex flex-col gap-3 hover:shadow-md transition-shadow`}>
+<div className="flex items-start justify-between gap-2">
+<h3 className="font-semibold text-gray-900 dark:text-white text-sm leading-snug flex-1">{note.title}</h3>
+<button onClick={() => onPin(note)} title={note.pinned ? "Unpin" : "Pin"} className={`text-lg leading-none flex-shrink-0 transition-opacity ${note.pinned ? "opacity-100" : "opacity-30 hover:opacity-60"}`}>📌</button>
+</div>
+<span className={`self-start inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded ${color.bg} ${color.text}`}>
+<span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />{note.category || "General"}
+</span>
+{note.content && (
+<p className="text-gray-600 dark:text-gray-400 text-xs leading-relaxed line-clamp-5 whitespace-pre-wrap flex-1">{note.content}</p>
+)}
+<div className="flex items-center justify-between gap-2 pt-1 border-t dark:border-gray-800">
+<span className="text-xs text-gray-400">{new Date(note.updatedAt).toLocaleDateString()}</span>
+<div className="flex gap-1.5">
+<button onClick={() => onEdit(note)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-2.5 py-1 rounded transition-colors">Edit</button>
+<button onClick={() => onDelete(note._id)} className="bg-red-500 hover:bg-red-600 text-white text-xs px-2.5 py-1 rounded transition-colors">Delete</button>
+</div>
+</div>
+</div>
+);
+})}
+</div>
+);
+}
+====================================================================
+// app\page.tsx
+import { redirect } from "next/navigation";
+export default function HomePage() {
+redirect("/videos");
+}
+====================================================================
+// app\priorities\page.js
+// app/priorities/page.js
+"use client";
+import { useEffect, useMemo, useState, useCallback } from "react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import ComboBox from "@/components/ComboBox";
+import moduleOrder from "../moduleOrder.js";
+import { DOMAIN_COLORS, buildDomainColorMap } from "@/lib/domainColors";
+const DOMAIN_ORDER = moduleOrder.DOMAIN_ORDER;
+const norm = (s) => s.toLowerCase().replace(/[\s/]/g, "");
+const DOMAIN_ORDER_NORM = DOMAIN_ORDER.map(norm);
+function domainIndex(d) {
+const n = norm(d);
+const i = DOMAIN_ORDER_NORM.indexOf(n);
+return i === -1 ? 999 : i;
+}
+function sortDomains(domains) {
+return [...domains].sort((a, b) => {
+const ai = domainIndex(a), bi = domainIndex(b);
+if (ai === bi) return a.localeCompare(b);
+return ai - bi;
+});
+}
+function SortIcon({ field, sortConfig }) {
+if (sortConfig.field !== field) return <span className="ml-1 text-gray-400 text-xs">↕</span>;
+return <span className="ml-1 text-xs">{sortConfig.dir === "asc" ? "↑" : "↓"}</span>;
+}
+function getPaginationRange(current, total) {
+const maxVisible = 10;
+if (total <= maxVisible) return Array.from({ length: total }, (_, i) => i + 1);
+let start = Math.max(1, current - Math.floor(maxVisible / 2));
+let end = start + maxVisible - 1;
+if (end > total) { end = total; start = Math.max(1, end - maxVisible + 1); }
+return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
+const inputCls = "border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 pr-8 rounded-lg text-sm text-gray-900 dark:text-white w-full";
+export default function PrioritiesPage() {
+const [priorities, setPriorities] = useState([]);
+const [editingId, setEditingId] = useState(null);
+const [loading, setLoading] = useState(true);
+const [submitting, setSubmitting] = useState(false);
+const [toast, setToast] = useState(null);
+const [formOpen, setFormOpen] = useState(false);
+const emptyForm = { domain: "", topic: "", moduleOrder: "", learnPriority: "" };
+const [formData, setFormData] = useState(emptyForm);
+const [search, setSearch] = useState("");
+const [selectedDomain, setSelectedDomain] = useState("");
+const [sortConfig, setSortConfig] = useState({ field: "learnPriority", dir: "asc" });
+const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 15;
+const showToast = useCallback((msg, type = "success") => {
+setToast({ msg, type });
+setTimeout(() => setToast(null), 4000);
+}, []);
+async function fetchPriorities() {
+setLoading(true);
+try {
+const res = await fetch("/api/priorities");
+setPriorities(await res.json());
+} catch { showToast("Failed to load priorities", "error"); }
+finally { setLoading(false); }
+}
+useEffect(() => { fetchPriorities(); /* eslint-disable-next-line */ }, []);
+const uniqueDomains = useMemo(() =>
+sortDomains([...new Set(priorities.map((p) => p.domain).filter(Boolean))]),
+[priorities]
+);
+const domainColorMap = useMemo(() => buildDomainColorMap(uniqueDomains), [uniqueDomains]);
+const uniqueTopicsForDomain = useMemo(() => {
+const source = formData.domain ? priorities.filter((p) => p.domain === formData.domain) : priorities;
+return [...new Set(source.map((p) => p.topic).filter(Boolean))].sort();
+}, [priorities, formData.domain]);
+function isDuplicateDomainTopic(domain, topic, excludeId = null) {
+return priorities.some(
+(p) => p.domain.trim().toLowerCase() === domain.trim().toLowerCase()
+&& p.topic.trim().toLowerCase() === topic.trim().toLowerCase()
+&& p._id !== excludeId
+);
+}
+function isDuplicateLearnPriority(learnPriority, excludeId = null) {
+return priorities.some((p) => Number(p.learnPriority) === Number(learnPriority) && p._id !== excludeId);
+}
+function handleChange(e) {
+const { name, value } = e.target;
+if (name === "domain") {
+setFormData((prev) => ({ ...prev, domain: value, topic: "", moduleOrder: "", learnPriority: "" }));
+return;
+}
+if (name === "topic") {
+const existing = priorities.find(
+(p) => p.domain.trim().toLowerCase() === formData.domain.trim().toLowerCase()
+&& p.topic.trim().toLowerCase() === value.trim().toLowerCase()
+&& p._id !== editingId
+);
+if (existing) {
+setFormData((prev) => ({ ...prev, topic: value, moduleOrder: existing.moduleOrder, learnPriority: existing.learnPriority }));
+} else {
+setFormData((prev) => ({ ...prev, topic: value }));
+}
+return;
+}
+setFormData((prev) => ({ ...prev, [name]: value }));
+}
+async function handleSubmit(e) {
+e.preventDefault();
+setSubmitting(true);
+const payload = { ...formData, moduleOrder: Number(formData.moduleOrder), learnPriority: Number(formData.learnPriority) };
+if (isDuplicateDomainTopic(formData.domain, formData.topic, editingId)) {
+showToast(`⚠️ Duplicate! Topic "${formData.topic}" already exists in domain "${formData.domain}".`, "error");
+setSubmitting(false); return;
+}
+if (isDuplicateLearnPriority(formData.learnPriority, editingId)) {
+showToast(`⚠️ Duplicate! Learn Priority "${formData.learnPriority}" is already assigned.`, "error");
+setSubmitting(false); return;
+}
+try {
+const res = editingId
+? await fetch(`/api/priorities/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+: await fetch("/api/priorities", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+if (res.ok) { showToast(editingId ? "Priority updated!" : "Priority added!"); resetForm(); fetchPriorities(); }
+else showToast("Save failed", "error");
+} catch { showToast("Network error", "error"); }
+finally { setSubmitting(false); }
+}
+function handleEdit(item) {
+setEditingId(item._id);
+setFormData({ domain: item.domain, topic: item.topic, moduleOrder: item.moduleOrder, learnPriority: item.learnPriority });
+setFormOpen(true);
+window.scrollTo({ top: 0, behavior: "smooth" });
+}
+async function handleDelete(id) {
+if (!window.confirm("Delete this priority?")) return;
+try {
+const res = await fetch(`/api/priorities/${id}`, { method: "DELETE" });
+if (res.ok) { showToast("Priority deleted"); fetchPriorities(); }
+} catch { showToast("Delete failed", "error"); }
+}
+function resetForm() { setEditingId(null); setFormData(emptyForm); setFormOpen(false); }
+function handleSort(field) {
+setSortConfig((prev) => prev.field === field ? { field, dir: prev.dir === "asc" ? "desc" : "asc" } : { field, dir: "asc" });
+setCurrentPage(1);
+}
+// ── Up/Down reorder: swap learnPriority values between two rows ──────────
+async function handleReorder(item, direction) {
+const list = filteredSorted; // current sorted view
+const idx = list.findIndex((p) => p._id === item._id);
+const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+if (swapIdx < 0 || swapIdx >= list.length) return;
+const other = list[swapIdx];
+// Swap learnPriority values
+const [newA, newB] = [other.learnPriority, item.learnPriority];
+try {
+await Promise.all([
+fetch(`/api/priorities/${item._id}`,  { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...item,  learnPriority: newA }) }),
+fetch(`/api/priorities/${other._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...other, learnPriority: newB }) }),
+]);
+// Optimistic update in local state
+setPriorities((prev) => prev.map((p) => {
+if (p._id === item._id)  return { ...p, learnPriority: newA };
+if (p._id === other._id) return { ...p, learnPriority: newB };
+return p;
+}));
+} catch { showToast("Reorder failed", "error"); }
+}
+const filteredSorted = useMemo(() => {
+let list = priorities.filter((item) => {
+const q = search.toLowerCase();
+const matchSearch = !q || item.domain?.toLowerCase().includes(q) || item.topic?.toLowerCase().includes(q);
+const matchDomain = !selectedDomain || item.domain === selectedDomain;
+return matchSearch && matchDomain;
+});
+list = [...list].sort((a, b) => {
+let av = a[sortConfig.field] ?? "", bv = b[sortConfig.field] ?? "";
+if (typeof av === "string") av = av.toLowerCase();
+if (typeof bv === "string") bv = bv.toLowerCase();
+if (av < bv) return sortConfig.dir === "asc" ? -1 : 1;
+if (av > bv) return sortConfig.dir === "asc" ? 1 : -1;
+return 0;
+});
+return list;
+}, [priorities, search, selectedDomain, sortConfig]);
+const totalPages = Math.max(1, Math.ceil(filteredSorted.length / itemsPerPage));
+const safePage = Math.min(currentPage, totalPages);
+const paginated = filteredSorted.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
+const pageNumbers = getPaginationRange(safePage, totalPages);
+useEffect(() => { setCurrentPage(1); }, [search, selectedDomain, sortConfig]);
+const domainCount = uniqueDomains.length;
+const topicCount = priorities.length;
+async function handleExcelImport(event) {
+const file = event.target.files[0]; if (!file) return;
+const reader = new FileReader();
+reader.onload = async (e) => {
+const workbook = XLSX.read(e.target.result, { type: "binary" });
+const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+const formatted = json.map((item) => ({
+domain: String(item.Domain || "").trim(),
+topic: String(item.Topic || "").trim(),
+moduleOrder: Number(item["Module Order"] || 0),
+learnPriority: Number(item["Learn Priority"] || 0),
+})).filter((item) => item.topic && item.domain);
+const seenDomainTopics = new Set(priorities.map((p) => `${p.domain.trim().toLowerCase()}::${p.topic.trim().toLowerCase()}`));
+const seenPriorities = new Set(priorities.map((p) => Number(p.learnPriority)));
+const skipped = [], toInsert = [];
+for (const item of formatted) {
+const compositeKey = `${item.domain.toLowerCase()}::${item.topic.toLowerCase()}`;
+const prioVal = Number(item.learnPriority);
+if (seenDomainTopics.has(compositeKey)) skipped.push(`${item.topic} in ${item.domain} (duplicate topic in same domain)`);
+else if (seenPriorities.has(prioVal)) skipped.push(item.topic + " (duplicate priority)");
+else { toInsert.push(item); seenDomainTopics.add(compositeKey); seenPriorities.add(prioVal); }
+}
+if (!toInsert.length) { showToast(`⚠️ All ${formatted.length} rows skipped — duplicates found.`, "error"); return; }
+try {
+for (const item of toInsert) await fetch("/api/priorities", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(item) });
+showToast(skipped.length ? `Imported ${toInsert.length} priorities. Skipped ${skipped.length} duplicate(s).` : `Imported ${toInsert.length} priorities successfully.`);
+fetchPriorities();
+} catch { showToast("Import failed", "error"); }
+};
+reader.readAsBinaryString(file); event.target.value = "";
+}
+function exportToExcel() {
+const data = filteredSorted.map((item) => ({ Domain: item.domain, Topic: item.topic, "Module Order": item.moduleOrder, "Learn Priority": item.learnPriority }));
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Priorities");
+saveAs(new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: "application/octet-stream" }), "priorities.xlsx");
+}
+const topicHasSavedData = formData.topic && formData.domain && !editingId &&
+priorities.find((p) => p.domain.trim().toLowerCase() === formData.domain.trim().toLowerCase()
+&& p.topic.trim().toLowerCase() === formData.topic.trim().toLowerCase());
+// Up/down only works when sorted by learnPriority asc (natural order)
+const isReorderMode = sortConfig.field === "learnPriority" && sortConfig.dir === "asc" && !search && !selectedDomain;
+return (
+<div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+{toast && (
+<div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-lg shadow-lg text-white text-sm font-medium max-w-sm ${toast.type === "error" ? "bg-red-600" : toast.type === "warn" ? "bg-yellow-500" : "bg-green-600"}`}>
+{toast.msg}
+</div>
+)}
+<div className="p-6 max-w-screen-xl mx-auto">
+{/* Header */}
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<div>
+<h1 className="text-3xl font-bold text-gray-900 dark:text-white">📋 Domain Priorities</h1>
+<p className="text-sm text-gray-500 mt-1">{topicCount} topics across {domainCount} domains</p>
+</div>
+<div className="flex flex-wrap gap-2">
+<button onClick={() => { setFormOpen((o) => !o); if (formOpen) resetForm(); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+{formOpen ? "✕ Close Form" : "+ Add Priority"}
+</button>
+<label className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors">
+↑ Import Excel<input type="file" accept=".xlsx,.xls" hidden onChange={handleExcelImport} />
+</label>
+<button onClick={exportToExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+↓ Export ({filteredSorted.length})
+</button>
+</div>
+</div>
+{/* Form */}
+{formOpen && (
+<div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 shadow-sm">
+<h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">{editingId ? "✏️ Edit Priority" : "➕ Add New Priority"}</h2>
+<form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Domain *</label>
+<ComboBox name="domain" value={formData.domain} onChange={handleChange} options={uniqueDomains} placeholder="Search or type domain…" required className={inputCls} />
+{formData.domain && !uniqueDomains.find((d) => d.toLowerCase() === formData.domain.toLowerCase()) && (
+<p className="text-xs text-blue-500 dark:text-blue-400 mt-0.5">✦ New domain will be created</p>
+)}
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Topic *</label>
+<ComboBox name="topic" value={formData.topic} onChange={handleChange} options={uniqueTopicsForDomain} placeholder="Search or type topic…" required className={inputCls} />
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Module Order *</label>
+<input type="number" step="0.1" name="moduleOrder" placeholder="e.g. 1.2" value={formData.moduleOrder} onChange={handleChange} required
+className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${topicHasSavedData ? "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800"} text-gray-900 dark:text-white`} />
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Learn Priority *</label>
+<input type="number" name="learnPriority" placeholder="e.g. 5" value={formData.learnPriority} onChange={handleChange} required
+className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${topicHasSavedData ? "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800"} text-gray-900 dark:text-white`} />
+</div>
+<div className="flex gap-3 sm:col-span-2 lg:col-span-4">
+<button type="submit" disabled={submitting} className="flex-1 sm:flex-none sm:w-40 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 px-4 rounded-lg text-sm font-medium">
+{submitting ? "Saving…" : editingId ? "Update" : "Add Priority"}
+</button>
+<button type="button" onClick={resetForm} className="flex-1 sm:flex-none sm:w-32 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-2.5 px-4 rounded-lg text-sm font-medium">
+Cancel
+</button>
+</div>
+</form>
+</div>
+)}
+{/* Filters */}
+<div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-4 shadow-sm">
+<div className="flex flex-col gap-3">
+<div className="relative">
+<span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+<input type="text" placeholder="Search domain or topic…" value={search} onChange={(e) => setSearch(e.target.value)}
+className="w-full pl-9 pr-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none" />
+</div>
+<div className="flex flex-wrap items-center gap-2">
+<button onClick={() => setSelectedDomain("")}
+className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${!selectedDomain ? "bg-gray-700 text-white border-gray-700" : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+All Domains
+</button>
+{uniqueDomains.map((d) => {
+const color = domainColorMap[d] || DOMAIN_COLORS[0];
+const isSelected = selectedDomain === d;
+return (
+<button key={d} onClick={() => setSelectedDomain(selectedDomain === d ? "" : d)}
+className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1.5 ${isSelected ? `${color.bg} ${color.text} border-transparent font-bold` : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+<span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />{d}
+</button>
+);
+})}
+</div>
+</div>
+{(search || selectedDomain) && (
+<div className="flex flex-wrap gap-2 mt-3 pt-3 border-t dark:border-gray-800">
+{search && <span className="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 text-xs px-2 py-1 rounded-full">Search: {search}<button onClick={() => setSearch("")} className="ml-1 hover:text-red-500">✕</button></span>}
+{selectedDomain && <span className="inline-flex items-center gap-1 bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 text-xs px-2 py-1 rounded-full">Domain: {selectedDomain}<button onClick={() => setSelectedDomain("")} className="ml-1 hover:text-red-500">✕</button></span>}
+<button onClick={() => { setSearch(""); setSelectedDomain(""); }} className="text-xs text-gray-500 hover:text-red-500 underline">Clear all</button>
+</div>
+)}
+<div className="flex items-center justify-between mt-2">
+<p className="text-xs text-gray-400">Showing {filteredSorted.length} of {topicCount} priorities</p>
+{!isReorderMode && (
+<p className="text-xs text-amber-500">⚠ Clear filters &amp; sort by Learn Priority ↑ to enable reorder buttons</p>
+)}
+</div>
+</div>
+{/* Table */}
+<div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+{loading ? (
+<div className="flex items-center justify-center py-20 text-gray-400"><span className="animate-spin mr-2">⟳</span> Loading priorities…</div>
+) : paginated.length === 0 ? (
+<div className="py-20 text-center text-gray-400">
+<div className="text-4xl mb-3">📋</div>
+<p className="text-sm">No priorities found.</p>
+<button onClick={() => setFormOpen(true)} className="mt-4 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg">Add First Priority</button>
+</div>
+) : (
+<div className="overflow-x-auto">
+<table className="w-full text-sm">
+<thead>
+<tr className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-left">
+<th className="px-4 py-3 font-semibold text-center w-10">#</th>
+<th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("domain")}>Domain <SortIcon field="domain" sortConfig={sortConfig} /></th>
+<th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("topic")}>Topic <SortIcon field="topic" sortConfig={sortConfig} /></th>
+<th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("moduleOrder")}>Module Order <SortIcon field="moduleOrder" sortConfig={sortConfig} /></th>
+<th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("learnPriority")}>Learn Priority <SortIcon field="learnPriority" sortConfig={sortConfig} /></th>
+<th className="px-4 py-3 font-semibold text-right whitespace-nowrap">Actions</th>
+</tr>
+</thead>
+<tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+{paginated.map((item, idx) => {
+const color = domainColorMap[item.domain] || DOMAIN_COLORS[0];
+const globalIdx = (safePage - 1) * itemsPerPage + idx;
+return (
+<tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td className="px-4 py-3 text-center text-xs text-gray-400">{globalIdx + 1}</td>
+<td className="px-4 py-3">
+<span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded ${color.bg} ${color.text}`}>
+<span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />{item.domain}
+</span>
+</td>
+<td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{item.topic}</td>
+<td className="px-4 py-3 text-gray-600 dark:text-gray-400">{item.moduleOrder}</td>
+<td className="px-4 py-3">
+<span className={`inline-block text-xs font-bold px-2.5 py-0.5 rounded-full ${item.learnPriority <= 3 ? "bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-400" : item.learnPriority <= 6 ? "bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400" : "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400"}`}>
+{item.learnPriority}
+</span>
+</td>
+<td className="px-4 py-3">
+<div className="flex gap-1.5 justify-end items-center">
+{/* Up/Down reorder — only shown in natural sort mode */}
+{isReorderMode && (
+<>
+<button
+onClick={() => handleReorder(item, "up")}
+disabled={globalIdx === 0}
+title="Move up"
+className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-30 text-gray-700 dark:text-gray-300 text-xs px-2 py-1.5 rounded transition-colors"
+>▲</button>
+<button
+onClick={() => handleReorder(item, "down")}
+disabled={globalIdx === filteredSorted.length - 1}
+title="Move down"
+className="bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-30 text-gray-700 dark:text-gray-300 text-xs px-2 py-1.5 rounded transition-colors"
+>▼</button>
+</>
+)}
+<button onClick={() => handleEdit(item)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded transition-colors">Edit</button>
+<button onClick={() => handleDelete(item._id)} className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition-colors">Delete</button>
+</div>
+</td>
+</tr>
+);
+})}
+</tbody>
+</table>
+</div>
+)}
+</div>
+{/* Pagination */}
+{totalPages > 1 && (
+<div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+<p className="text-xs text-gray-500">Page {safePage} of {totalPages} ({filteredSorted.length} results)</p>
+<div className="flex flex-wrap gap-1">
+<button onClick={() => setCurrentPage(1)} disabled={safePage === 1} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">«</button>
+<button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">‹</button>
+{pageNumbers[0] > 1 && <span className="px-2 py-1.5 text-xs text-gray-400">…</span>}
+{pageNumbers.map((p) => (
+<button key={p} onClick={() => setCurrentPage(p)} className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${p === safePage ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300"}`}>{p}</button>
+))}
+{pageNumbers[pageNumbers.length - 1] < totalPages && <span className="px-2 py-1.5 text-xs text-gray-400">…</span>}
+<button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">›</button>
+<button onClick={() => setCurrentPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">»</button>
+</div>
+</div>
+)}
+</div>
+</div>
+);
+}
+====================================================================
+// app\videos\page.js
+// app/videos/page.js
+"use client";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+import ComboBox from "@/components/ComboBox";
+import moduleOrder from "../moduleOrder.js";
+import { DOMAIN_COLORS, buildDomainColorMap } from "@/lib/domainColors";
+const DOMAIN_ORDER = moduleOrder.DOMAIN_ORDER;
+const norm = (s) => s.toLowerCase().replace(/[\s/]/g, "");
+const DOMAIN_ORDER_NORM = DOMAIN_ORDER.map(norm);
+function domainIndex(d) {
+const n = norm(d);
+const i = DOMAIN_ORDER_NORM.indexOf(n);
+return i === -1 ? 999 : i;
+}
+function sortDomains(domains) {
+return [...domains].sort((a, b) => {
+const ai = domainIndex(a), bi = domainIndex(b);
+if (ai === bi) return a.localeCompare(b);
+return ai - bi;
+});
+}
+function parseBool(val) {
+if (typeof val === "boolean") return val;
+if (typeof val === "string") return val.trim().toLowerCase() === "yes" || val.trim().toLowerCase() === "true";
+return false;
+}
+function SortIcon({ field, sortConfig }) {
+if (sortConfig.field !== field) return <span className="ml-1 text-gray-400">↕</span>;
+return <span className="ml-1">{sortConfig.dir === "asc" ? "↑" : "↓"}</span>;
+}
+function getPaginationRange(current, total) {
+const maxVisible = 10;
+if (total <= maxVisible) return Array.from({ length: total }, (_, i) => i + 1);
+let start = Math.max(1, current - Math.floor(maxVisible / 2));
+let end = start + maxVisible - 1;
+if (end > total) { end = total; start = Math.max(1, end - maxVisible + 1); }
+return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
+const inputCls = "border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 pr-8 rounded-lg text-sm text-gray-900 dark:text-white w-full";
+function TopicFilterDropdown({ grouped, value, onChange, allDomains, domainColorMap }) {
+const [open, setOpen] = useState(false);
+const [query, setQuery] = useState("");
+const ref = useRef(null);
+useEffect(() => {
+function handler(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+document.addEventListener("mousedown", handler);
+return () => document.removeEventListener("mousedown", handler);
+}, []);
+const filtered = useMemo(() => {
+if (!query.trim()) return grouped;
+const q = query.toLowerCase();
+return grouped
+.map((g) => ({ ...g, topics: g.topics.filter((t) => t.toLowerCase().includes(q)) }))
+.filter((g) => g.topics.length > 0 || g.domain.toLowerCase().includes(q));
+}, [grouped, query]);
+const selectedColor = value ? domainColorMap[grouped.find((g) => g.topics.includes(value))?.domain] : null;
+function select(topic) { onChange(topic); setOpen(false); setQuery(""); }
+return (
+<div ref={ref} className="relative">
+<button type="button" onClick={() => setOpen((o) => !o)}
+className="w-full flex items-center justify-between border dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg text-sm text-left">
+{value ? (
+<span className={`inline-flex items-center gap-1.5 font-medium ${selectedColor?.text || "text-gray-900 dark:text-white"}`}>
+<span className={`w-2 h-2 rounded-full ${selectedColor?.dot || "bg-gray-400"}`} />{value}
+</span>
+) : <span className="text-gray-500">All Topics</span>}
+<span className="text-gray-400 text-xs ml-2">{open ? "▲" : "▼"}</span>
+</button>
+{open && (
+<div className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-2xl max-h-72 flex flex-col">
+<div className="p-2 border-b dark:border-gray-700">
+<input autoFocus type="text" placeholder="Search topics…" value={query} onChange={(e) => setQuery(e.target.value)}
+className="w-full px-2 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded outline-none" />
+</div>
+<div className="overflow-y-auto flex-1">
+{!query && (
+<div onMouseDown={(e) => { e.preventDefault(); select(""); }}
+className={`px-3 py-2 text-sm cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 ${!value ? "font-semibold bg-gray-50 dark:bg-gray-700" : ""}`}>
+All Topics
+</div>
+)}
+{filtered.map((group) => {
+const color = domainColorMap[group.domain] || DOMAIN_COLORS[0];
+return (
+<div key={group.domain}>
+<div className={`px-3 py-1 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 sticky top-0 ${color.bg} ${color.text}`}>
+<span className={`w-2 h-2 rounded-full ${color.dot}`} />{group.domain}
+</div>
+{group.topics.map((topic) => (
+<div key={topic} onMouseDown={(e) => { e.preventDefault(); select(topic); }}
+className={`px-4 py-2 text-sm cursor-pointer transition-colors ${topic === value ? `${color.bg} ${color.text} font-semibold` : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"}`}>
+{topic}
+</div>
+))}
+</div>
+);
+})}
+{filtered.length === 0 && <div className="px-3 py-4 text-sm text-gray-400 text-center">No topics found</div>}
+</div>
+</div>
+)}
+</div>
+);
+}
+export default function VideosPage() {
+const [videos, setVideos] = useState([]);
+const [priorities, setPriorities] = useState([]);
+const [editingId, setEditingId] = useState(null);
+const [loading, setLoading] = useState(true);
+const [submitting, setSubmitting] = useState(false);
+const [toast, setToast] = useState(null);
+const [search, setSearch] = useState("");
+// Default to "WebDev" on first load; will be cleared if not available
+const [selectedDomain, setSelectedDomain] = useState("WebDev");
+const [selectedTopic, setSelectedTopic] = useState("");
+const [seriesFilter, setSeriesFilter] = useState(false);
+const [notSeriesFilter, setNotSeriesFilter] = useState(false);
+const [downloadedFilter, setDownloadedFilter] = useState(false);
+const [notDownloadedFilter, setNotDownloadedFilter] = useState(false);
+const [sortConfig, setSortConfig] = useState({ field: "priority", dir: "asc" });
+const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 10;
+const emptyForm = { domain: "", priority: "", topic: "", videoName: "", channelName: "", youtubeLink: "", series: false, downloaded: false };
+const [formData, setFormData] = useState(emptyForm);
+const [formOpen, setFormOpen] = useState(false);
+const [ytFetching, setYtFetching] = useState(false);
+const ytDebounceRef = useRef(null);
+const [importModal, setImportModal] = useState(false);
+const [importDefaultTopic, setImportDefaultTopic] = useState("");
+const [importDefaultDomain, setImportDefaultDomain] = useState("");
+const importFileRef = useRef(null);
+const showToast = useCallback((msg, type = "success") => {
+setToast({ msg, type });
+setTimeout(() => setToast(null), 4000);
+}, []);
+const topicPriorityMap = useMemo(() => {
+const map = {};
+priorities.forEach((p) => { if (p.topic && p.domain) map[`${p.domain}::${p.topic}`] = p.learnPriority; });
+return map;
+}, [priorities]);
+async function fetchVideos() {
+setLoading(true);
+try { const res = await fetch("/api/videos"); setVideos(await res.json()); }
+catch { showToast("Failed to load videos", "error"); }
+finally { setLoading(false); }
+}
+async function fetchPriorities() {
+try { const res = await fetch("/api/priorities"); const data = await res.json(); setPriorities(data); return data; }
+catch { showToast("Failed to load priorities", "error"); }
+}
+useEffect(() => {
+fetchVideos();
+fetchPriorities(); /* eslint-disable-next-line */
+}, []);
+const uniqueDomains = useMemo(() => {
+const fromPriorities = priorities.map((p) => p.domain);
+const fromVideos = videos.map((v) => v.domain);
+return sortDomains([...new Set([...fromPriorities, ...fromVideos].filter(Boolean))]);
+}, [priorities, videos]);
+const domainColorMap = useMemo(() => buildDomainColorMap(uniqueDomains), [uniqueDomains]);
+// Validate WebDev default: if "WebDev" not in domains after load, clear it
+useEffect(() => {
+if (uniqueDomains.length > 0 && selectedDomain === "WebDev" && !uniqueDomains.find((d) => norm(d) === norm("WebDev"))) {
+setSelectedDomain("");
+}
+}, [uniqueDomains]); // eslint-disable-line
+const formTopicOptions = useMemo(() => {
+if (!formData.domain) return [...new Set(priorities.map((p) => p.topic).filter(Boolean))].sort();
+return [...new Set(priorities.filter((p) => p.domain === formData.domain).map((p) => p.topic).filter(Boolean))].sort();
+}, [priorities, formData.domain]);
+const filterTopicGrouped = useMemo(() => {
+const domainMap = {};
+priorities.forEach((p) => {
+if (!p.topic || !p.domain) return;
+if (selectedDomain && p.domain !== selectedDomain) return;
+if (!domainMap[p.domain]) domainMap[p.domain] = new Set();
+domainMap[p.domain].add(p.topic);
+});
+return sortDomains(Object.keys(domainMap))
+.map((domain) => ({ domain, topics: [...domainMap[domain]].sort() }));
+}, [priorities, selectedDomain]);
+const uniqueChannels = useMemo(() => [...new Set(videos.map((v) => v.channelName).filter(Boolean))].sort(), [videos]);
+function normalizeYtUrl(url) {
+try { const u = new URL(url); const v = u.searchParams.get("v"); return v ? v : url.trim().toLowerCase(); }
+catch { return url.trim().toLowerCase(); }
+}
+function isDuplicateVideo(youtubeLink, videoName, channelName, excludeId = null) {
+const normUrl = normalizeYtUrl(youtubeLink);
+const normName = videoName.trim().toLowerCase();
+const normChannel = (channelName || "").trim().toLowerCase();
+return videos.find((v) => {
+if (v._id === excludeId) return false;
+if (normalizeYtUrl(v.youtubeLink) === normUrl) return true;
+const vChannel = (v.channelName || "").trim().toLowerCase();
+if (v.videoName.trim().toLowerCase() === normName && vChannel === normChannel && normChannel !== "") return true;
+return false;
+});
+}
+function isValidYoutubeUrl(url) { return url && (url.includes("youtube.com/watch") || url.includes("youtu.be/")); }
+async function fetchYoutubeMeta(url) {
+if (!isValidYoutubeUrl(url)) return;
+setYtFetching(true);
+try {
+const res = await fetch(`/api/youtube-meta?url=${encodeURIComponent(url)}`);
+const data = await res.json();
+if (data.title) { setFormData((prev) => ({ ...prev, videoName: prev.videoName || data.title, channelName: prev.channelName || data.channel })); showToast("✓ Video info auto-filled from YouTube"); }
+} catch { /* silent */ } finally { setYtFetching(false); }
+}
+function handleFormDomainChange(e) {
+const domain = e.target.value;
+setFormData((prev) => {
+const topicsInNewDomain = priorities.filter((p) => p.domain === domain).map((p) => p.topic);
+const keepTopic = topicsInNewDomain.includes(prev.topic);
+return { ...prev, domain, ...(keepTopic ? {} : { topic: "", priority: "" }) };
+});
+}
+function handleChange(e) {
+const { name, value, checked, type } = e.target;
+if (name === "topic") {
+setFormData((prev) => {
+const key = prev.domain ? `${prev.domain}::${value}` : "";
+const priority = key ? (topicPriorityMap[key] ?? "") : "";
+return { ...prev, topic: value, priority };
+});
+return;
+}
+if (name === "youtubeLink") {
+setFormData((prev) => ({ ...prev, youtubeLink: value }));
+if (ytDebounceRef.current) clearTimeout(ytDebounceRef.current);
+ytDebounceRef.current = setTimeout(() => fetchYoutubeMeta(value), 800);
+return;
+}
+setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+}
+async function handleSubmit(e) {
+e.preventDefault();
+if (!formData.topic || !formData.videoName || !formData.youtubeLink) { showToast("Please fill Topic, Video Name and YouTube Link", "error"); return; }
+const dupEntry = isDuplicateVideo(formData.youtubeLink, formData.videoName, formData.channelName, editingId);
+if (dupEntry) {
+const normUrl = normalizeYtUrl(dupEntry.youtubeLink) === normalizeYtUrl(formData.youtubeLink);
+const reason = normUrl ? "YouTube link" : `video name in channel "${dupEntry.channelName || "unknown"}"`;
+showToast(`⚠️ Duplicate! A video with the same ${reason} already exists: "${dupEntry.videoName}"`, "error"); return;
+}
+setSubmitting(true);
+const payload = { ...formData, domain: formData.domain || "", priority: Number(formData.priority), series: Boolean(formData.series), downloaded: Boolean(formData.downloaded) };
+try {
+const topicExists = priorities.some((p) => p.domain.trim().toLowerCase() === (formData.domain || "").trim().toLowerCase() && p.topic.trim().toLowerCase() === formData.topic.trim().toLowerCase());
+if (!topicExists && formData.domain && formData.topic) {
+await fetch("/api/priorities", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: formData.domain, topic: formData.topic, moduleOrder: 0, learnPriority: 0 }) });
+await fetchPriorities();
+}
+const res = editingId
+? await fetch(`/api/videos/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
+: await fetch("/api/videos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+if (res.ok) { showToast(editingId ? "Video updated!" : "Video added!"); resetForm(); fetchVideos(); }
+else showToast("Save failed", "error");
+} catch { showToast("Network error", "error"); }
+finally { setSubmitting(false); }
+}
+function handleEdit(item) {
+setEditingId(item._id);
+const domain = item.domain || "";
+const key = `${domain}::${item.topic}`;
+const livePriority = topicPriorityMap[key] ?? item.priority;
+setFormData({ domain, priority: livePriority, topic: item.topic, videoName: item.videoName, channelName: item.channelName, youtubeLink: item.youtubeLink, series: parseBool(item.series), downloaded: parseBool(item.downloaded) });
+setFormOpen(true);
+window.scrollTo({ top: 0, behavior: "smooth" });
+}
+async function handleDelete(id) {
+if (!window.confirm("Delete this video?")) return;
+try { const res = await fetch(`/api/videos/${id}`, { method: "DELETE" }); if (res.ok) { showToast("Video deleted"); fetchVideos(); } }
+catch { showToast("Delete failed", "error"); }
+}
+function resetForm() { setEditingId(null); setFormData(emptyForm); setFormOpen(false); }
+async function toggleDownloaded(item) {
+try {
+await fetch(`/api/videos/${item._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: item.domain || "", priority: item.priority, topic: item.topic, videoName: item.videoName, channelName: item.channelName, youtubeLink: item.youtubeLink, series: parseBool(item.series), downloaded: !parseBool(item.downloaded) }) });
+fetchVideos();
+} catch { showToast("Update failed", "error"); }
+}
+function handleSort(field) { setSortConfig((prev) => (prev.field === field ? { field, dir: prev.dir === "asc" ? "desc" : "asc" } : { field, dir: "asc" })); setCurrentPage(1); }
+function handleDomainFilterChange(domain) {
+setSelectedDomain(domain);
+if (domain && selectedTopic) {
+const domainTopics = priorities.filter((p) => p.domain === domain).map((p) => p.topic);
+if (!domainTopics.includes(selectedTopic)) setSelectedTopic("");
+}
+}
+const filteredSorted = useMemo(() => {
+let list = videos.filter((item) => {
+const domain = item.domain || "";
+const q = search.toLowerCase();
+const matchSearch = !q || item.topic?.toLowerCase().includes(q) || item.videoName?.toLowerCase().includes(q) || item.channelName?.toLowerCase().includes(q) || domain.toLowerCase().includes(q);
+const matchTopic = !selectedTopic || item.topic === selectedTopic;
+const matchDomain = !selectedDomain || domain === selectedDomain;
+const isSeries = parseBool(item.series);
+const isDownloaded = parseBool(item.downloaded);
+let matchSeries = true;
+if (seriesFilter && !notSeriesFilter) matchSeries = isSeries === true;
+else if (!seriesFilter && notSeriesFilter) matchSeries = isSeries !== true;
+let matchDl = true;
+if (downloadedFilter && !notDownloadedFilter) matchDl = isDownloaded === true;
+else if (!downloadedFilter && notDownloadedFilter) matchDl = isDownloaded !== true;
+return matchSearch && matchTopic && matchDomain && matchSeries && matchDl;
+});
+list = [...list].sort((a, b) => {
+let av, bv;
+if (sortConfig.field === "domain") { av = a.domain || ""; bv = b.domain || ""; }
+else if (sortConfig.field === "priority") { av = a.priority ?? 0; bv = b.priority ?? 0; }
+else if (sortConfig.field === "series") { av = parseBool(a.series) ? 1 : 0; bv = parseBool(b.series) ? 1 : 0; }
+else if (sortConfig.field === "downloaded") { av = parseBool(a.downloaded) ? 1 : 0; bv = parseBool(b.downloaded) ? 1 : 0; }
+else { av = a[sortConfig.field] ?? ""; bv = b[sortConfig.field] ?? ""; }
+if (typeof av === "string") av = av.toLowerCase();
+if (typeof bv === "string") bv = bv.toLowerCase();
+if (av < bv) return sortConfig.dir === "asc" ? -1 : 1;
+if (av > bv) return sortConfig.dir === "asc" ? 1 : -1;
+return 0;
+});
+return list;
+}, [videos, search, selectedTopic, selectedDomain, seriesFilter, notSeriesFilter, downloadedFilter, notDownloadedFilter, sortConfig]);
+const totalPages = Math.max(1, Math.ceil(filteredSorted.length / itemsPerPage));
+const safePage = Math.min(currentPage, totalPages);
+const paginatedVideos = filteredSorted.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
+const pageNumbers = getPaginationRange(safePage, totalPages);
+useEffect(() => { setCurrentPage(1); }, [search, selectedTopic, selectedDomain, seriesFilter, notSeriesFilter, downloadedFilter, notDownloadedFilter, sortConfig]);
+async function handleExcelImport(event) {
+const file = event.target.files[0]; if (!file) return;
+const reader = new FileReader();
+reader.onload = async (e) => {
+const workbook = XLSX.read(e.target.result, { type: "binary" });
+const sheet = workbook.Sheets[workbook.SheetNames[0]];
+const defaultTopic = importDefaultTopic.trim();
+const defaultDomain = importDefaultDomain.trim();
+const defaultKey = defaultDomain && defaultTopic ? `${defaultDomain}::${defaultTopic}` : "";
+const defaultPriority = defaultKey ? (topicPriorityMap[defaultKey] ?? 0) : 0;
+const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+const firstRow = (rawRows[0] || []).map((c) => String(c || "").trim());
+const hasHeader = firstRow.some((c) => /youtube link|videoname|topic|channel|priority/i.test(c));
+let formatted;
+if (hasHeader) {
+const json = XLSX.utils.sheet_to_json(sheet);
+formatted = json.map((item) => {
+const topic = (item.Topic || "").trim() || defaultTopic;
+const domain = (item.Domain || "").trim() || defaultDomain;
+const key = domain && topic ? `${domain}::${topic}` : "";
+const priority = key ? (topicPriorityMap[key] ?? Number(item.Priority || defaultPriority)) : Number(item.Priority || 0);
+return { priority, topic, domain, videoName: (item["Video Name"] || "").trim(), channelName: (item["Channel Name"] || "").trim(), youtubeLink: (item["YouTube Link"] || String(Object.values(item)[0] || "")).trim(), series: parseBool(item.Series), downloaded: parseBool(item.Downloaded) };
+});
+} else {
+formatted = rawRows.flatMap((row) => row.map((cell) => String(cell || "").trim()))
+.filter((cell) => cell.includes("youtube.com") || cell.includes("youtu.be"))
+.map((url) => ({ priority: defaultPriority, topic: defaultTopic, domain: defaultDomain, videoName: "", channelName: "", youtubeLink: url, series: false, downloaded: false }));
+}
+const validFormatted = formatted.filter((item) => item.youtubeLink);
+const existingUrls = new Set(videos.map((v) => normalizeYtUrl(v.youtubeLink)));
+const existingChannelNames = new Set(videos.map((v) => `${(v.channelName || "").trim().toLowerCase()}::${v.videoName.trim().toLowerCase()}`));
+const skipped = [], toInsert = [];
+for (const item of validFormatted) {
+const normUrl = normalizeYtUrl(item.youtubeLink);
+const channelKey = `${(item.channelName || "").trim().toLowerCase()}::${(item.videoName || "").trim().toLowerCase()}`;
+if (existingUrls.has(normUrl)) { skipped.push(`"${item.videoName || item.youtubeLink}" (duplicate YouTube link)`); continue; }
+if (item.videoName && existingChannelNames.has(channelKey)) { skipped.push(`"${item.videoName}" (duplicate name in same channel)`); continue; }
+toInsert.push(item); existingUrls.add(normUrl);
+if (item.videoName) existingChannelNames.add(channelKey);
+}
+if (!toInsert.length) { showToast(`⚠️ All ${validFormatted.length} rows are duplicates — nothing imported.`, "warn"); return; }
+for (let i = 0; i < toInsert.length; i++) {
+const item = toInsert[i];
+if (item.videoName && item.channelName) continue;
+setToast({ msg: `⟳ Fetching YouTube info… ${i + 1}/${toInsert.length}`, type: "warn" });
+try { const res = await fetch(`/api/youtube-meta?url=${encodeURIComponent(item.youtubeLink)}`); const data = await res.json(); if (data.title) item.videoName = item.videoName || data.title; if (data.channel) item.channelName = item.channelName || data.channel; }
+catch { /* save with blank fields */ }
+}
+let saved = 0, fetchFailed = 0, missingTopic = 0, saveFailed = 0;
+for (const item of toInsert) {
+if (!item.videoName) { fetchFailed++; continue; }
+if (!item.topic) { missingTopic++; continue; }
+try { const res = await fetch("/api/videos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(item) }); if (res.ok) { saved++; } else { saveFailed++; } }
+catch { saveFailed++; }
+}
+const parts = ["Imported " + saved + " video(s)."];
+if (skipped.length) parts.push(skipped.length + " duplicate(s) skipped.");
+if (missingTopic > 0) parts.push(missingTopic + " skipped (Topic column blank).");
+if (fetchFailed > 0) parts.push(fetchFailed + " skipped (YouTube title not found).");
+if (saveFailed > 0) parts.push(saveFailed + " failed to save.");
+showToast(parts.join(" "), saved === 0 ? "error" : skipped.length || missingTopic || fetchFailed || saveFailed ? "warn" : "success");
+fetchVideos();
+};
+reader.readAsBinaryString(file); event.target.value = "";
+}
+function exportToExcel() {
+const data = filteredSorted.map((item) => ({ Domain: item.domain || "", Priority: item.priority, Topic: item.topic, "Video Name": item.videoName, "Channel Name": item.channelName, "YouTube Link": item.youtubeLink, Series: parseBool(item.series) ? "Yes" : "No", Downloaded: parseBool(item.downloaded) ? "Yes" : "No" }));
+const wb = XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Videos");
+saveAs(new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: "application/octet-stream" }), "videos.xlsx");
+}
+function getYtId(url) {
+try { const u = new URL(url); return u.searchParams.get("v") || u.pathname.split("/").pop() || null; }
+catch { return url.split("v=")[1]?.split("&")[0] || null; }
+}
+const totalVideos = videos.length;
+const downloadedCount = videos.filter((v) => parseBool(v.downloaded)).length;
+const pendingCount = totalVideos - downloadedCount;
+const hasActiveFilter = search || selectedDomain || selectedTopic || seriesFilter || notSeriesFilter || downloadedFilter || notDownloadedFilter;
+return (
+<div className="min-h-screen bg-gray-50 dark:bg-gray-950">
+{toast && (
+<div className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-lg shadow-lg text-white text-sm font-medium max-w-sm transition-all ${toast.type === "error" ? "bg-red-600" : toast.type === "warn" ? "bg-yellow-500" : "bg-green-600"}`}>
+{toast.msg}
+</div>
+)}
+<div className="p-6 max-w-screen-xl mx-auto">
+{/* Header */}
+<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<div>
+<h1 className="text-3xl font-bold text-gray-900 dark:text-white">🎬 YouTube Videos</h1>
+<p className="text-sm text-gray-500 mt-1">{totalVideos} total · {downloadedCount} downloaded · {pendingCount} pending</p>
+</div>
+<div className="flex flex-wrap gap-2">
+<button onClick={() => { setFormOpen((o) => !o); if (formOpen) resetForm(); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+{formOpen ? "✕ Close Form" : "+ Add Video"}
+</button>
+<button onClick={() => setImportModal(true)} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">↑ Import Excel</button>
+<input ref={importFileRef} type="file" accept=".xlsx,.xls" hidden onChange={handleExcelImport} />
+<button onClick={exportToExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">↓ Export ({filteredSorted.length})</button>
+</div>
+</div>
+{/* Import Modal */}
+{importModal && (
+<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setImportModal(false)}>
+<div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+<h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">↑ Import Excel</h2>
+<p className="text-xs text-gray-500 dark:text-gray-400 mb-4">If your Excel rows have blank <strong>Domain</strong> or <strong>Topic</strong> columns, set defaults below.</p>
+<div className="flex flex-col gap-3">
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Default Domain (for blank rows)</label>
+<ComboBox name="importDomain" value={importDefaultDomain} onChange={(e) => { setImportDefaultDomain(e.target.value); setImportDefaultTopic(""); }} options={uniqueDomains} placeholder="Select or type domain…" className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 pr-8 rounded-lg text-sm text-gray-900 dark:text-white w-full" />
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Default Topic (for blank rows)</label>
+<ComboBox name="importTopic" value={importDefaultTopic} onChange={(e) => setImportDefaultTopic(e.target.value)}
+options={importDefaultDomain ? priorities.filter((p) => p.domain === importDefaultDomain).map((p) => p.topic).filter(Boolean) : priorities.map((p) => p.topic).filter(Boolean)}
+placeholder="Select or type topic…" className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 pr-8 rounded-lg text-sm text-gray-900 dark:text-white w-full" />
+{importDefaultTopic && <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Will be applied to all rows with blank Topic</p>}
+</div>
+</div>
+<div className="flex gap-3 mt-5">
+<button onClick={() => { setImportModal(false); importFileRef.current?.click(); }} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg text-sm font-medium">Choose File & Import</button>
+<button onClick={() => setImportModal(false)} className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-2.5 px-4 rounded-lg text-sm font-medium">Cancel</button>
+</div>
+</div>
+</div>
+)}
+{/* Form */}
+{formOpen && (
+<div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 shadow-sm">
+<h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">{editingId ? "✏️ Edit Video" : "➕ Add New Video"}</h2>
+<form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Domain</label>
+<ComboBox name="formDomain" value={formData.domain} onChange={handleFormDomainChange} options={uniqueDomains} placeholder="Select or type domain…" className={inputCls} />
+{formData.domain && !uniqueDomains.find((d) => d.toLowerCase() === formData.domain.toLowerCase()) && (
+<p className="text-xs text-blue-500 dark:text-blue-400 mt-0.5">✦ New domain will be created</p>
+)}
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Topic *</label>
+<ComboBox name="topic" value={formData.topic} onChange={handleChange} options={formTopicOptions} placeholder={formData.domain ? "Search topics…" : "Select domain first…"} required className={inputCls} />
+{formData.domain && <p className="text-xs text-gray-400 mt-0.5">{formTopicOptions.length > 0 ? `${formTopicOptions.length} topics in "${formData.domain}"` : "No topics in this domain"}</p>}
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Priority <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span></label>
+<input type="number" name="priority" placeholder="Auto-filled from topic" value={formData.priority} onChange={handleChange}
+className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${formData.priority !== "" ? "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800"} text-gray-900 dark:text-white`} />
+{formData.topic && formData.priority !== "" && <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Synced from priorities</p>}
+</div>
+<div className="flex flex-col gap-1 sm:col-span-2 lg:col-span-3">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+YouTube Link *{ytFetching && <span className="ml-2 text-blue-500 normal-case font-normal animate-pulse">⟳ Fetching info…</span>}
+</label>
+<input type="url" name="youtubeLink" placeholder="Paste YouTube link — video name & channel will auto-fill" value={formData.youtubeLink} onChange={handleChange} required className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 rounded-lg text-sm text-gray-900 dark:text-white" />
+{!ytFetching && isValidYoutubeUrl(formData.youtubeLink) && <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Valid YouTube URL detected</p>}
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Video Name *{formData.videoName && isValidYoutubeUrl(formData.youtubeLink) && <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span>}</label>
+<input type="text" name="videoName" placeholder="Auto-filled from YouTube link" value={formData.videoName} onChange={handleChange} required
+className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${formData.videoName && isValidYoutubeUrl(formData.youtubeLink) ? "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800"} text-gray-900 dark:text-white`} />
+</div>
+<div className="flex flex-col gap-1">
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Channel Name{formData.channelName && isValidYoutubeUrl(formData.youtubeLink) && <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span>}</label>
+<ComboBox name="channelName" value={formData.channelName} onChange={handleChange} options={uniqueChannels} placeholder="Auto-filled from YouTube link"
+className={`${inputCls} ${formData.channelName && isValidYoutubeUrl(formData.youtubeLink) ? "!bg-green-50 dark:!bg-green-900/20 !border-green-300 dark:!border-green-700" : ""}`} />
+</div>
+<div className="flex items-center gap-6 pt-4">
+<label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="series" name="series" checked={!!formData.series} onChange={handleChange} className="w-4 h-4 accent-blue-600" /><span className="text-sm text-gray-700 dark:text-gray-300">Is Series</span></label>
+<label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" id="downloaded" name="downloaded" checked={!!formData.downloaded} onChange={handleChange} className="w-4 h-4 accent-blue-600" /><span className="text-sm text-gray-700 dark:text-gray-300">Downloaded</span></label>
+</div>
+<div className="flex gap-3 sm:col-span-2 items-end">
+<button type="submit" disabled={submitting} className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 px-4 rounded-lg text-sm font-medium">{submitting ? "Saving…" : editingId ? "Update Video" : "Add Video"}</button>
+<button type="button" onClick={resetForm} className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-2.5 px-4 rounded-lg text-sm font-medium">Cancel</button>
+</div>
+</form>
+</div>
+)}
+{/* Filters */}
+<div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-4 shadow-sm">
+<div className="flex flex-col gap-3">
+<div className="relative">
+<span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+<input type="text" placeholder="Search domain, topic, video…" value={search} onChange={(e) => setSearch(e.target.value)}
+className="w-full pl-9 pr-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 outline-none" />
+</div>
+{/* Domain Buttons with colors */}
+<div className="flex flex-wrap items-center gap-2">
+<button onClick={() => handleDomainFilterChange("")}
+className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${!selectedDomain ? "bg-gray-700 text-white border-gray-700" : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+All Domains
+</button>
+{uniqueDomains.map((d) => {
+const color = domainColorMap[d] || DOMAIN_COLORS[0];
+const isSelected = selectedDomain === d;
+return (
+<button key={d} onClick={() => handleDomainFilterChange(selectedDomain === d ? "" : d)}
+className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors flex items-center gap-1.5 ${isSelected ? `${color.bg} ${color.text} border-transparent font-bold` : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}>
+<span className={`w-1.5 h-1.5 rounded-full ${color.dot}`} />{d}
+</button>
+);
+})}
+</div>
+<div className="flex flex-wrap items-center gap-4">
+<div className="min-w-48">
+<TopicFilterDropdown grouped={filterTopicGrouped} value={selectedTopic} onChange={setSelectedTopic} allDomains={uniqueDomains} domainColorMap={domainColorMap} />
+</div>
+<label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 select-none">
+<input type="checkbox" checked={seriesFilter} onChange={(e) => { setSeriesFilter(e.target.checked); if (e.target.checked) setNotSeriesFilter(false); }} className="w-4 h-4 accent-indigo-600" />Series
+</label>
+<label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 select-none">
+<input type="checkbox" checked={notSeriesFilter} onChange={(e) => { setNotSeriesFilter(e.target.checked); if (e.target.checked) setSeriesFilter(false); }} className="w-4 h-4 accent-orange-500" />Not Series
+</label>
+<label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 select-none">
+<input type="checkbox" checked={downloadedFilter} onChange={(e) => { setDownloadedFilter(e.target.checked); if (e.target.checked) setNotDownloadedFilter(false); }} className="w-4 h-4 accent-green-600" />Downloaded
+</label>
+<label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 select-none">
+<input type="checkbox" checked={notDownloadedFilter} onChange={(e) => { setNotDownloadedFilter(e.target.checked); if (e.target.checked) setDownloadedFilter(false); }} className="w-4 h-4 accent-red-500" />Not Downloaded
+</label>
+</div>
+</div>
+{hasActiveFilter && (
+<div className="flex flex-wrap gap-2 mt-3 pt-3 border-t dark:border-gray-800">
+{search && <span className="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 text-xs px-2 py-1 rounded-full">Search: {search}<button onClick={() => setSearch("")} className="ml-1 hover:text-red-500">✕</button></span>}
+{selectedDomain && <span className="inline-flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 text-xs px-2 py-1 rounded-full">Domain: {selectedDomain}<button onClick={() => { setSelectedDomain(""); setSelectedTopic(""); }} className="ml-1 hover:text-red-500">✕</button></span>}
+{selectedTopic && <span className="inline-flex items-center gap-1 bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 text-xs px-2 py-1 rounded-full">Topic: {selectedTopic}<button onClick={() => setSelectedTopic("")} className="ml-1 hover:text-red-500">✕</button></span>}
+{seriesFilter && <span className="inline-flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 text-xs px-2 py-1 rounded-full">Series<button onClick={() => setSeriesFilter(false)} className="ml-1 hover:text-red-500">✕</button></span>}
+{notSeriesFilter && <span className="inline-flex items-center gap-1 bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300 text-xs px-2 py-1 rounded-full">Not Series<button onClick={() => setNotSeriesFilter(false)} className="ml-1 hover:text-red-500">✕</button></span>}
+{downloadedFilter && <span className="inline-flex items-center gap-1 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">Downloaded<button onClick={() => setDownloadedFilter(false)} className="ml-1 hover:text-red-500">✕</button></span>}
+{notDownloadedFilter && <span className="inline-flex items-center gap-1 bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 text-xs px-2 py-1 rounded-full">Not Downloaded<button onClick={() => setNotDownloadedFilter(false)} className="ml-1 hover:text-red-500">✕</button></span>}
+<button onClick={() => { setSearch(""); setSelectedDomain(""); setSelectedTopic(""); setSeriesFilter(false); setNotSeriesFilter(false); setDownloadedFilter(false); setNotDownloadedFilter(false); }} className="text-xs text-gray-500 hover:text-red-500 underline">Clear all</button>
+</div>
+)}
+<p className="text-xs text-gray-400 mt-2">Showing {filteredSorted.length} of {totalVideos} videos</p>
+</div>
+{/* Table */}
+<div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
+{loading ? (
+<div className="flex items-center justify-center py-20 text-gray-400"><span className="animate-spin mr-2">⟳</span> Loading videos…</div>
+) : paginatedVideos.length === 0 ? (
+<div className="py-20 text-center text-gray-400"><div className="text-4xl mb-3">🎬</div><p className="text-sm">No videos found. Try adjusting your filters.</p></div>
+) : (
+<div className="overflow-x-auto">
+<table className="w-full text-sm min-w-[1100px]">
+<thead>
+<tr className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-left">
+<th className="px-4 py-3 font-semibold w-28">Thumbnail</th>
+<th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("priority")}>Priority <SortIcon field="priority" sortConfig={sortConfig} /></th>
+<th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("domain")}>Domain <SortIcon field="domain" sortConfig={sortConfig} /></th>
+<th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("topic")}>Topic <SortIcon field="topic" sortConfig={sortConfig} /></th>
+<th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap w-80" onClick={() => handleSort("videoName")}>Video Name <SortIcon field="videoName" sortConfig={sortConfig} /></th>
+<th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("channelName")}>Channel <SortIcon field="channelName" sortConfig={sortConfig} /></th>
+<th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none text-center whitespace-nowrap" onClick={() => handleSort("series")}>Series <SortIcon field="series" sortConfig={sortConfig} /></th>
+<th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none text-center whitespace-nowrap" onClick={() => handleSort("downloaded")}>Downloaded <SortIcon field="downloaded" sortConfig={sortConfig} /></th>
+<th className="px-4 py-3 font-semibold text-right whitespace-nowrap">Actions</th>
+</tr>
+</thead>
+<tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+{paginatedVideos.map((item) => {
+const ytId = getYtId(item.youtubeLink);
+const thumbnail = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null;
+const domain = item.domain || "—";
+const domainColor = domain !== "—" ? (domainColorMap[item.domain] || DOMAIN_COLORS[0]) : null;
+const key = `${item.domain}::${item.topic}`;
+const livePriority = topicPriorityMap[key] ?? item.priority;
+const isSeries = parseBool(item.series);
+const isDownloaded = parseBool(item.downloaded);
+return (
+<tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+<td className="px-4 py-3">
+{thumbnail ? (
+<img src={thumbnail} alt={item.videoName} className="w-24 h-14 object-cover rounded-md bg-gray-200" onError={(e) => { e.target.style.display = "none"; }} />
+) : (
+<div className="w-24 h-14 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center text-gray-400 text-xs">No img</div>
+)}
+</td>
+<td className="px-4 py-3">
+<span className="inline-block bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 text-xs font-bold px-2 py-0.5 rounded">{livePriority}</span>
+</td>
+<td className="px-4 py-3">
+{domainColor ? (
+<span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded ${domainColor.bg} ${domainColor.text}`}>
+<span className={`w-1.5 h-1.5 rounded-full ${domainColor.dot}`} />{domain}
+</span>
+) : <span className="text-gray-400 text-xs">—</span>}
+</td>
+<td className="px-4 py-3">
+<span className="inline-block bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 text-xs px-2 py-0.5 rounded">{item.topic}</span>
+</td>
+<td className="px-4 py-3 w-80">
+<a href={item.youtubeLink} target="_blank" rel="noopener noreferrer" className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 font-medium line-clamp-2" title={item.videoName}>{item.videoName}</a>
+</td>
+<td className="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs whitespace-nowrap">{item.channelName || "—"}</td>
+<td className="px-4 py-3 text-center text-xs">{isSeries ? "✅" : "—"}</td>
+<td className="px-4 py-3 text-center">
+<button onClick={() => toggleDownloaded(item)}
+className={`text-xs px-2 py-1 rounded font-medium transition-colors ${isDownloaded ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 hover:bg-green-200" : "bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200"}`}>
+{isDownloaded ? "✅" : "⬜"}
+</button>
+</td>
+<td className="px-4 py-3">
+<div className="flex gap-2 justify-end">
+<button onClick={() => handleEdit(item)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded transition-colors">Edit</button>
+<button onClick={() => handleDelete(item._id)} className="bg-red-500 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded transition-colors">Delete</button>
+</div>
+</td>
+</tr>
+);
+})}
+</tbody>
+</table>
+</div>
+)}
+</div>
+{/* Pagination */}
+{totalPages > 1 && (
+<div className="flex items-center justify-between mt-4 flex-wrap gap-2">
+<p className="text-xs text-gray-500">Page {safePage} of {totalPages} ({filteredSorted.length} results)</p>
+<div className="flex flex-wrap gap-1">
+<button onClick={() => setCurrentPage(1)} disabled={safePage === 1} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">«</button>
+<button onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={safePage === 1} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">‹</button>
+{pageNumbers[0] > 1 && <span className="px-2 py-1.5 text-xs text-gray-400">…</span>}
+{pageNumbers.map((p) => (
+<button key={p} onClick={() => setCurrentPage(p)} className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${p === safePage ? "bg-blue-600 text-white" : "bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300"}`}>{p}</button>
+))}
+{pageNumbers[pageNumbers.length - 1] < totalPages && <span className="px-2 py-1.5 text-xs text-gray-400">…</span>}
+<button onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={safePage === totalPages} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">›</button>
+<button onClick={() => setCurrentPage(totalPages)} disabled={safePage === totalPages} className="px-2 py-1.5 rounded text-xs bg-gray-200 dark:bg-gray-800 disabled:opacity-40">»</button>
+</div>
+</div>
+)}
+</div>
+</div>
+);
+}
+====================================================================
+// components\ComboBox.js
+"use client";
+import { useState, useRef, useEffect } from "react";
+/**
+* ComboBox — searchable input with dropdown suggestions.
+*
+* Fires onChange with a synthetic event { target: { name, value } }
+* so it works as a drop-in replacement for <input> / <select> onChange handlers.
+*
+* Props:
+*   name        – field name (passed back in synthetic event)
+*   value       – controlled value (string)
+*   onChange    – (syntheticEvent) => void
+*   options     – string[]  existing values to suggest
+*   placeholder – string
+*   required    – bool
+*   disabled    – bool
+*   className   – extra classes for the <input>
+*/
+export default function ComboBox({
+name,
+value = "",
+onChange,
+options = [],
+placeholder = "",
+required = false,
+disabled = false,
+className = "",
+}) {
+const [open, setOpen] = useState(false);
+const containerRef = useRef(null);
+// Close dropdown on outside click
+useEffect(() => {
+function onClickOutside(e) {
+if (containerRef.current && !containerRef.current.contains(e.target)) {
+setOpen(false);
+}
+}
+document.addEventListener("mousedown", onClickOutside);
+return () => document.removeEventListener("mousedown", onClickOutside);
+}, []);
+// Filtered options: show all when empty, otherwise filter by input
+const filtered = value
+? options.filter((opt) => opt.toLowerCase().includes(value.toLowerCase()))
+: options;
+// Show "Add new" hint when typed value doesn't exactly match any existing option
+const isNew =
+value.trim() !== "" &&
+!options.find((o) => o.toLowerCase() === value.trim().toLowerCase());
+function fire(val) {
+onChange({ target: { name, value: val } });
+}
+function handleInputChange(e) {
+fire(e.target.value);
+setOpen(true);
+}
+function handleSelect(opt) {
+fire(opt);
+setOpen(false);
+}
+const showDropdown = open && !disabled && (filtered.length > 0 || isNew);
+return (
+<div ref={containerRef} className="relative">
+<input
+type="text"
+name={name}
+value={value}
+onChange={handleInputChange}
+onFocus={() => setOpen(true)}
+placeholder={placeholder}
+required={required}
+disabled={disabled}
+autoComplete="off"
+spellCheck={false}
+className={className}
+/>
+{/* Chevron icon */}
+{!disabled && (
+<button
+type="button"
+tabIndex={-1}
+onMouseDown={(e) => {
+e.preventDefault();
+setOpen((o) => !o);
+}}
+className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xs select-none"
+>
+{open ? "▲" : "▼"}
+</button>
+)}
+{showDropdown && (
+<ul className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-2xl max-h-52 overflow-y-auto">
+{filtered.map((opt) => (
+<li
+key={opt}
+onMouseDown={(e) => {
+e.preventDefault();
+handleSelect(opt);
+}}
+className={`px-3 py-2 text-sm cursor-pointer transition-colors
+hover:bg-blue-50 dark:hover:bg-blue-900/30
+text-gray-900 dark:text-white
+${opt.toLowerCase() === value.toLowerCase()
+? "bg-blue-50 dark:bg-blue-900/20 font-semibold text-blue-700 dark:text-blue-300"
+: ""
+}`}
+>
+{opt}
+</li>
+))}
+{/* "Add new" row when typed value is not in options */}
+{isNew && (
+<li
+onMouseDown={(e) => {
+e.preventDefault();
+handleSelect(value.trim());
+}}
+className="px-3 py-2 text-sm cursor-pointer text-blue-600 dark:text-blue-400
+hover:bg-blue-50 dark:hover:bg-blue-900/30
+border-t border-gray-100 dark:border-gray-700 font-medium flex items-center gap-1"
+>
+<span className="text-base leading-none">＋</span>
+<span>Add &ldquo;{value.trim()}&rdquo;</span>
+</li>
+)}
+</ul>
+)}
+</div>
+);
+}
+====================================================================
+// components\DarkModeButton.js
+"use client";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+export default function DarkModeButton() {
+const { theme, setTheme, resolvedTheme } = useTheme();
+const [mounted, setMounted] = useState(false);
+// Avoid hydration mismatch — only render after mount
+useEffect(() => { setMounted(true); }, []);
+if (!mounted) return null;
+const isDark = resolvedTheme === "dark";
+return (
+<button
+onClick={() => setTheme(isDark ? "light" : "dark")}
+className="w-full bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-lg transition-all text-sm font-medium"
+>
+{isDark ? "☀️  Light Mode" : "🌙  Dark Mode"}
+</button>
+);
+}
+====================================================================
+// components\Sidebar.js
+// components/Sidebar.js
+"use client";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import DarkModeButton from "./DarkModeButton";
+export default function Sidebar() {
+const pathname = usePathname();
+const navItems = [
+{ name: "Domain Priorities", path: "/priorities"  },
+{ name: "YouTube Videos",     path: "/videos"     },
+{ name: "Other Learning Links",      path: "/links"       },
+{ name: "Notes",      path: "/notes"       },
+];
+return (
+<aside className="w-64 min-h-screen bg-black text-white p-5 border-r border-gray-800 flex flex-col">
+<h1 className="text-2xl font-bold mb-10 leading-snug">Learning Manager</h1>
+<nav className="flex flex-col gap-3 flex-1">
+{navItems.map((item) => (
+<Link
+key={item.path}
+href={item.path}
+className={`p-3 rounded-lg transition-all ${
+pathname === item.path ? "bg-blue-600" : "hover:bg-gray-800"
+}`}
+>
+{item.name}
+</Link>
+))}
+</nav>
+<div className="mt-4">
+<DarkModeButton />
+</div>
+</aside>
+);
+}
+====================================================================
+// components\ThemeProvider.js
+"use client";
+import { ThemeProvider } from "next-themes";
+export default function Providers({
+children,
+}) {
+return (
+<ThemeProvider
+attribute="class"
+defaultTheme="dark"
+enableSystem={false}
+>
+{children}
+</ThemeProvider>
+);
+}
+====================================================================
+// eslint.config.mjs
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextVitals from "eslint-config-next/core-web-vitals";
+import nextTs from "eslint-config-next/typescript";
+const eslintConfig = defineConfig([
+...nextVitals,
+...nextTs,
+// Override default ignores of eslint-config-next.
+globalIgnores([
+// Default ignores of eslint-config-next:
+".next/**",
+"out/**",
+"build/**",
+"next-env.d.ts",
+]),
+]);
+export default eslintConfig;
+====================================================================
+// lib\domainColors.js
+// lib/domainColors.js  — single source of truth for domain colors
+// Used by both Videos and Priorities pages
+export const DOMAIN_COLORS = [
+{ bg: "bg-indigo-100 dark:bg-indigo-900/50",  text: "text-indigo-700 dark:text-indigo-300",  dot: "bg-indigo-500"  },
+{ bg: "bg-emerald-100 dark:bg-emerald-900/50", text: "text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500" },
+{ bg: "bg-orange-100 dark:bg-orange-900/50",   text: "text-orange-700 dark:text-orange-300",   dot: "bg-orange-500"  },
+{ bg: "bg-pink-100 dark:bg-pink-900/50",       text: "text-pink-700 dark:text-pink-300",       dot: "bg-pink-500"    },
+{ bg: "bg-violet-100 dark:bg-violet-900/50",   text: "text-violet-700 dark:text-violet-300",   dot: "bg-violet-500"  },
+{ bg: "bg-cyan-100 dark:bg-cyan-900/50",       text: "text-cyan-700 dark:text-cyan-300",       dot: "bg-cyan-500"    },
+{ bg: "bg-amber-100 dark:bg-amber-900/50",     text: "text-amber-700 dark:text-amber-300",     dot: "bg-amber-500"   },
+{ bg: "bg-teal-100 dark:bg-teal-900/50",       text: "text-teal-700 dark:text-teal-300",       dot: "bg-teal-500"    },
+{ bg: "bg-rose-100 dark:bg-rose-900/50",       text: "text-rose-700 dark:text-rose-300",       dot: "bg-rose-500"    },
+{ bg: "bg-sky-100 dark:bg-sky-900/50",         text: "text-sky-700 dark:text-sky-300",         dot: "bg-sky-500"     },
+{ bg: "bg-lime-100 dark:bg-lime-900/50",       text: "text-lime-700 dark:text-lime-300",       dot: "bg-lime-500"    },
+{ bg: "bg-fuchsia-100 dark:bg-fuchsia-900/50", text: "text-fuchsia-700 dark:text-fuchsia-300", dot: "bg-fuchsia-500" },
+];
+/**
+* Build a stable domain → color map from a sorted list of domain names.
+* Pass the DOMAIN_ORDER-sorted array so colors are consistent across pages.
+*/
+export function buildDomainColorMap(sortedDomains) {
+const map = {};
+sortedDomains.forEach((d, i) => {
+map[d] = DOMAIN_COLORS[i % DOMAIN_COLORS.length];
+});
+return map;
+}
+====================================================================
+// lib\mongodb.js
+import mongoose from "mongoose";
+const MONGODB_URI = process.env.MONGODB_URI;
+if (!MONGODB_URI) {
+throw new Error("Please define MONGODB_URI");
+}
+let cached = global.mongoose;
+if (!cached) {
+cached = global.mongoose = {
+conn: null,
+promise: null,
+};
+}
+async function connectDB() {
+if (cached.conn) {
+return cached.conn;
+}
+if (!cached.promise) {
+cached.promise = mongoose.connect(MONGODB_URI).then((mongoose) => {
+return mongoose;
+});
+}
+cached.conn = await cached.promise;
+return cached.conn;
+}
+export default connectDB;
+====================================================================
+// models\Link.js
+// models/Link.js
+import mongoose from "mongoose";
+const LinkSchema = new mongoose.Schema(
+{
+category:  { type: String, required: true },
+topic:     { type: String, required: true },
+subtopic:  { type: String, default: "" },
+reference: { type: String, required: true },
+},
+{ timestamps: true }
+);
+export default mongoose.models.Link || mongoose.model("Link", LinkSchema);
+====================================================================
+// models\Note.js
+// models/Note.js
+import mongoose from "mongoose";
+const NoteSchema = new mongoose.Schema(
+{
+title:    { type: String, required: true },
+content:  { type: String, default: "" },
+category: { type: String, default: "General" },
+pinned:   { type: Boolean, default: false },
+},
+{ timestamps: true }
+);
+export default mongoose.models.Note || mongoose.model("Note", NoteSchema);
+====================================================================
+// models\Priority.js
+import mongoose from "mongoose";
+const PrioritySchema = new mongoose.Schema(
+{
+domain: {
+type: String,
+required: true,
+},
+topic: {
+type: String,
+required: true,
+},
+moduleOrder: {
+type: Number,
+required: true,
+},
+learnPriority: {
+type: Number,
+required: true,
+},
+},
+{
+timestamps: true,
+}
+);
+export default mongoose.models.Priority ||
+mongoose.model("Priority", PrioritySchema);
+====================================================================
+// models\Video.js
+// models/Video.js
+import mongoose from "mongoose";
+const VideoSchema = new mongoose.Schema(
+{
+domain:      { type: String,  default: "" },
+priority:    { type: Number,  default: 0 },
+topic:       { type: String,  required: true },
+videoName:   { type: String,  required: true },
+channelName: { type: String,  default: "" },
+youtubeLink: { type: String,  required: true },
+// FIX: explicit Boolean with setter to coerce any stored string → boolean
+series: {
+type: Boolean,
+default: false,
+set: (v) => {
+if (typeof v === "boolean") return v;
+if (typeof v === "string") return v.trim().toLowerCase() === "yes" || v.trim().toLowerCase() === "true";
+return Boolean(v);
+},
+},
+downloaded: {
+type: Boolean,
+default: false,
+set: (v) => {
+if (typeof v === "boolean") return v;
+if (typeof v === "string") return v.trim().toLowerCase() === "yes" || v.trim().toLowerCase() === "true";
+return Boolean(v);
+},
+},
+},
+{ timestamps: true }
+);
+export default mongoose.models.Video || mongoose.model("Video", VideoSchema);
+====================================================================
+// next-env.d.ts
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+import "./.next/dev/types/routes.d.ts";
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+====================================================================
+// next.config.ts
+import type { NextConfig } from "next";
+const nextConfig: NextConfig = {
+/* config options here */
+};
+export default nextConfig;
+====================================================================
+// package.json
+{
+"name": "learning-manager",
+"version": "0.1.0",
+"private": true,
+"scripts": {
+"dev": "next dev",
+"build": "next build",
+"start": "next start",
+"lint": "eslint"
+},
+"dependencies": {
+"file-saver": "^2.0.5",
+"ignore": "^7.0.5",
+"mongoose": "^9.6.2",
+"next": "16.2.6",
+"next-themes": "^0.4.6",
+"react": "19.2.4",
+"react-dom": "19.2.4",
+"xlsx": "^0.18.5"
+},
+"devDependencies": {
+"@tailwindcss/postcss": "^4",
+"@types/node": "^20",
+"@types/react": "^19",
+"@types/react-dom": "^19",
+"eslint": "^9",
+"eslint-config-next": "16.2.6",
+"tailwindcss": "^4",
+"typescript": "^5"
+}
+}
+====================================================================
+// postcss.config.mjs
+const config = {
+plugins: {
+"@tailwindcss/postcss": {},
+},
+};
+export default config;
+====================================================================
+// tailwind.config.js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+darkMode: "class",
+content: [
+"./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
+"./src/components/**/*.{js,ts,jsx,tsx,mdx}",
+"./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+],
+theme: {
+extend: {},
+},
+plugins: [],
+};
+====================================================================
+// tsconfig.json
+{
+"compilerOptions": {
+"target": "ES2017",
+"lib": ["dom", "dom.iterable", "esnext"],
+"allowJs": true,
+"skipLibCheck": true,
+"strict": true,
+"noEmit": true,
+"esModuleInterop": true,
+"module": "esnext",
+"moduleResolution": "bundler",
+"resolveJsonModule": true,
+"isolatedModules": true,
+"jsx": "react-jsx",
+"incremental": true,
+"plugins": [
+{
+"name": "next"
+}
+],
+"paths": {
+"@/*": ["./*"]
+}
+},
+"include": [
+"next-env.d.ts",
+"**/*.ts",
+"**/*.tsx",
+".next/types/**/*.ts",
+".next/dev/types/**/*.ts",
+"**/*.mts"
+],
+"exclude": ["node_modules"]
+}
+====================================================================
