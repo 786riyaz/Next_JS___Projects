@@ -207,8 +207,15 @@ return sortDomains(Object.keys(domainMap), domainOrder)
 }, [priorities, selectedDomain, domainOrder]);
 const uniqueChannels = useMemo(() => [...new Set(videos.map((v) => v.channelName).filter(Boolean))].sort(), [videos]);
 function normalizeYtUrl(url) {
-try { const u = new URL(url); const v = u.searchParams.get("v"); return v ? v : url.trim().toLowerCase(); }
-catch { return url.trim().toLowerCase(); }
+try {
+const u = new URL(url);
+// Handle shorts: /shorts/<id>
+if (u.pathname.startsWith("/shorts/")) {
+return u.pathname.split("/shorts/")[1].split("/")[0];
+}
+const v = u.searchParams.get("v");
+return v ? v : url.trim().toLowerCase();
+} catch { return url.trim().toLowerCase(); }
 }
 function isDuplicateVideo(youtubeLink, videoName, channelName, excludeId = null) {
 const normUrl = normalizeYtUrl(youtubeLink);
@@ -222,7 +229,14 @@ if (v.videoName.trim().toLowerCase() === normName && vChannel === normChannel &&
 return false;
 });
 }
-function isValidYoutubeUrl(url) { return url && (url.includes("youtube.com/watch") || url.includes("youtu.be/")); }
+// FIX 1: Added youtube.com/shorts support
+function isValidYoutubeUrl(url) {
+return url && (
+url.includes("youtube.com/watch") ||
+url.includes("youtu.be/") ||
+url.includes("youtube.com/shorts/")
+);
+}
 async function fetchYoutubeMeta(url) {
 if (!isValidYoutubeUrl(url)) return;
 setYtFetching(true);
@@ -272,7 +286,19 @@ const payload = { ...formData, domain: formData.domain || "", priority: Number(f
 try {
 const topicExists = priorities.some((p) => p.domain.trim().toLowerCase() === (formData.domain || "").trim().toLowerCase() && p.topic.trim().toLowerCase() === formData.topic.trim().toLowerCase());
 if (!topicExists && formData.domain && formData.topic) {
-await fetch("/api/priorities", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: formData.domain, topic: formData.topic, moduleOrder: 0, learnPriority: 0 }) });
+// FIX 2: Use actual values from the form fields instead of hardcoded 0
+const newLearnPriority = Number(formData.priority) || 0;
+const newModuleOrder = Number(formData.priority) || 0;
+// FIX 3: Check if learnPriority is already taken before creating new topic
+if (newLearnPriority !== 0) {
+const priorityTaken = priorities.some((p) => Number(p.learnPriority) === newLearnPriority);
+if (priorityTaken) {
+const takenBy = priorities.find((p) => Number(p.learnPriority) === newLearnPriority);
+showToast(`⚠️ Learn Priority "${newLearnPriority}" is already taken by topic "${takenBy.topic}" in "${takenBy.domain}". Please use a different priority.`, "error");
+setSubmitting(false); return;
+}
+}
+await fetch("/api/priorities", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ domain: formData.domain, topic: formData.topic, moduleOrder: newModuleOrder, learnPriority: newLearnPriority }) });
 await fetchPriorities();
 }
 const res = editingId
@@ -420,9 +446,13 @@ const wb = XLSX.utils.book_new();
 XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Videos");
 saveAs(new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: "application/octet-stream" }), "videos.xlsx");
 }
+// FIX 1: getYtId also extracts ID from shorts URLs
 function getYtId(url) {
-try { const u = new URL(url); return u.searchParams.get("v") || u.pathname.split("/").pop() || null; }
-catch { return url.split("v=")[1]?.split("&")[0] || null; }
+try {
+const u = new URL(url);
+if (u.pathname.startsWith("/shorts/")) return u.pathname.split("/shorts/")[1].split("/")[0];
+return u.searchParams.get("v") || u.pathname.split("/").pop() || null;
+} catch { return url.split("v=")[1]?.split("&")[0] || null; }
 }
 const totalVideos = videos.length;
 const downloadedCount = videos.filter((v) => parseBool(v.downloaded)).length;
@@ -495,10 +525,20 @@ placeholder="Select or type topic…" className="border dark:border-gray-700 bg-
 {formData.domain && <p className="text-xs text-gray-400 mt-0.5">{formTopicOptions.length > 0 ? `${formTopicOptions.length} topics in "${formData.domain}"` : "No topics in this domain"}</p>}
 </div>
 <div className="flex flex-col gap-1">
-<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Priority <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span></label>
+<label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+Priority
+{formData.priority !== "" && topicPriorityMap[`${formData.domain}::${formData.topic}`] !== undefined
+? <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span>
+: formData.topic && !priorities.some((p) => p.domain.trim().toLowerCase() === (formData.domain||"").trim().toLowerCase() && p.topic.trim().toLowerCase() === formData.topic.trim().toLowerCase())
+? <span className="ml-1 text-blue-400 normal-case font-normal">(set for new topic)</span>
+: null}
+</label>
 <input type="number" name="priority" placeholder="Auto-filled from topic" value={formData.priority} onChange={handleChange}
 className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${formData.priority !== "" ? "bg-green-50 dark:bg-green-900/20 border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800"} text-gray-900 dark:text-white`} />
-{formData.topic && formData.priority !== "" && <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Synced from priorities</p>}
+{formData.topic && formData.priority !== "" && topicPriorityMap[`${formData.domain}::${formData.topic}`] !== undefined && <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Synced from priorities</p>}
+{formData.topic && !priorities.some((p) => p.domain.trim().toLowerCase() === (formData.domain||"").trim().toLowerCase() && p.topic.trim().toLowerCase() === formData.topic.trim().toLowerCase()) && (
+<p className="text-xs text-blue-500 dark:text-blue-400 mt-0.5">✦ New topic — enter priority manually</p>
+)}
 </div>
 <div className="flex flex-col gap-1 sm:col-span-2 lg:col-span-3">
 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
