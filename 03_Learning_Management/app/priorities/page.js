@@ -1,39 +1,62 @@
-// app\priorities\page.js
+// app/priorities/page.js
 "use client";
 import { useEffect, useMemo, useState, useCallback } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import ComboBox from "@/components/ComboBox";
+import moduleOrder from "../moduleOrder.js";
+
+// ── Fixed domain order ──────────────────────────────────────────────────────
+const DOMAIN_ORDER = moduleOrder.DOMAIN_ORDER;
+
+const norm = (s) => s.toLowerCase().replace(/[\s/]/g, "");
+const DOMAIN_ORDER_NORM = DOMAIN_ORDER.map(norm);
+
+function domainIndex(d) {
+  const n = norm(d);
+  return DOMAIN_ORDER_NORM.indexOf(n);
+}
+
+function sortDomains(domains) {
+  return [...domains].sort((a, b) => {
+    const ai = domainIndex(a);
+    const bi = domainIndex(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
 
 function SortIcon({ field, sortConfig }) {
   if (sortConfig.field !== field) return <span className="ml-1 text-gray-400 text-xs">↕</span>;
   return <span className="ml-1 text-xs">{sortConfig.dir === "asc" ? "↑" : "↓"}</span>;
 }
+
 function getPaginationRange(current, total) {
   const maxVisible = 10;
   if (total <= maxVisible) return Array.from({ length: total }, (_, i) => i + 1);
   let start = Math.max(1, current - Math.floor(maxVisible / 2));
-  let end   = start + maxVisible - 1;
+  let end = start + maxVisible - 1;
   if (end > total) { end = total; start = Math.max(1, end - maxVisible + 1); }
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 }
+
 const inputCls = "border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 pr-8 rounded-lg text-sm text-gray-900 dark:text-white w-full";
 
 export default function PrioritiesPage() {
   const [priorities, setPriorities] = useState([]);
-  const [editingId, setEditingId]   = useState(null);
-  const [loading, setLoading]       = useState(true);
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [toast, setToast]           = useState(null);
-  const [formOpen, setFormOpen]     = useState(false);
-
+  const [toast, setToast] = useState(null);
+  const [formOpen, setFormOpen] = useState(false);
   const emptyForm = { domain: "", topic: "", moduleOrder: "", learnPriority: "" };
   const [formData, setFormData] = useState(emptyForm);
-
-  const [search, setSearch]                 = useState("");
+  const [search, setSearch] = useState("");
   const [selectedDomain, setSelectedDomain] = useState("");
-  const [sortConfig, setSortConfig]         = useState({ field: "learnPriority", dir: "asc" });
-  const [currentPage, setCurrentPage]       = useState(1);
+  const [sortConfig, setSortConfig] = useState({ field: "learnPriority", dir: "asc" });
+  const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
   const showToast = useCallback((msg, type = "success") => {
@@ -44,61 +67,56 @@ export default function PrioritiesPage() {
   async function fetchPriorities() {
     setLoading(true);
     try {
-      const res  = await fetch("/api/priorities");
+      const res = await fetch("/api/priorities");
       const data = await res.json();
       setPriorities(data);
     } catch { showToast("Failed to load priorities", "error"); }
-    finally  { setLoading(false); }
+    finally { setLoading(false); }
   }
+
   useEffect(() => { fetchPriorities(); /* eslint-disable-next-line */ }, []);
 
-  // ─── Duplicate checks ─────────────────────────────────────────────────────
-  function isDuplicateTopic(topic, excludeId = null) {
-    return priorities.some((p) => p.topic.trim().toLowerCase() === topic.trim().toLowerCase() && p._id !== excludeId);
+  function isDuplicateDomainTopic(domain, topic, excludeId = null) {
+    return priorities.some(
+      (p) => p.domain.trim().toLowerCase() === domain.trim().toLowerCase()
+        && p.topic.trim().toLowerCase() === topic.trim().toLowerCase()
+        && p._id !== excludeId
+    );
   }
+
   function isDuplicateLearnPriority(learnPriority, excludeId = null) {
     return priorities.some((p) => Number(p.learnPriority) === Number(learnPriority) && p._id !== excludeId);
   }
 
-  // ─── Derived lists ────────────────────────────────────────────────────────
+  // ── Sorted unique domains following DOMAIN_ORDER ─────────────────────────
   const uniqueDomains = useMemo(() => {
-    return [...new Set(priorities.map((p) => p.domain).filter(Boolean))].sort();
+    return sortDomains([...new Set(priorities.map((p) => p.domain).filter(Boolean))]);
   }, [priorities]);
 
-  // Topics filtered by selected domain in form
   const uniqueTopicsForDomain = useMemo(() => {
     const source = formData.domain ? priorities.filter((p) => p.domain === formData.domain) : priorities;
     return [...new Set(source.map((p) => p.topic).filter(Boolean))].sort();
   }, [priorities, formData.domain]);
 
-  // ─── Form handlers ────────────────────────────────────────────────────────
   function handleChange(e) {
     const { name, value } = e.target;
-
     if (name === "domain") {
-      // When domain changes, clear topic and dependent fields
       setFormData((prev) => ({ ...prev, domain: value, topic: "", moduleOrder: "", learnPriority: "" }));
       return;
     }
-
     if (name === "topic") {
-      // Auto-fill moduleOrder + learnPriority if this topic already exists
       const existing = priorities.find(
-        (p) => p.topic.trim().toLowerCase() === value.trim().toLowerCase() && p._id !== editingId
+        (p) => p.domain.trim().toLowerCase() === formData.domain.trim().toLowerCase()
+          && p.topic.trim().toLowerCase() === value.trim().toLowerCase()
+          && p._id !== editingId
       );
       if (existing) {
-        setFormData((prev) => ({
-          ...prev,
-          topic:         value,
-          moduleOrder:   existing.moduleOrder,
-          learnPriority: existing.learnPriority,
-        }));
+        setFormData((prev) => ({ ...prev, topic: value, moduleOrder: existing.moduleOrder, learnPriority: existing.learnPriority }));
       } else {
         setFormData((prev) => ({ ...prev, topic: value }));
       }
       return;
     }
-
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
 
@@ -106,24 +124,22 @@ export default function PrioritiesPage() {
     e.preventDefault();
     setSubmitting(true);
     const payload = { ...formData, moduleOrder: Number(formData.moduleOrder), learnPriority: Number(formData.learnPriority) };
-
-    if (isDuplicateTopic(formData.topic, editingId)) {
-      showToast(`⚠️ Duplicate! Topic "${formData.topic}" already exists.`, "error");
+    if (isDuplicateDomainTopic(formData.domain, formData.topic, editingId)) {
+      showToast(`⚠️ Duplicate! Topic "${formData.topic}" already exists in domain "${formData.domain}".`, "error");
       setSubmitting(false); return;
     }
     if (isDuplicateLearnPriority(formData.learnPriority, editingId)) {
       showToast(`⚠️ Duplicate! Learn Priority "${formData.learnPriority}" is already assigned.`, "error");
       setSubmitting(false); return;
     }
-
     try {
       const res = editingId
         ? await fetch(`/api/priorities/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
-        : await fetch("/api/priorities",               { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        : await fetch("/api/priorities", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (res.ok) { showToast(editingId ? "Priority updated!" : "Priority added!"); resetForm(); fetchPriorities(); }
       else showToast("Save failed", "error");
     } catch { showToast("Network error", "error"); }
-    finally  { setSubmitting(false); }
+    finally { setSubmitting(false); }
   }
 
   function handleEdit(item) {
@@ -148,7 +164,6 @@ export default function PrioritiesPage() {
     setCurrentPage(1);
   }
 
-  // ─── Filter + Sort ────────────────────────────────────────────────────────
   const filteredSorted = useMemo(() => {
     let list = priorities.filter((item) => {
       const q = search.toLowerCase();
@@ -161,41 +176,43 @@ export default function PrioritiesPage() {
       if (typeof av === "string") av = av.toLowerCase();
       if (typeof bv === "string") bv = bv.toLowerCase();
       if (av < bv) return sortConfig.dir === "asc" ? -1 : 1;
-      if (av > bv) return sortConfig.dir === "asc" ?  1 : -1;
+      if (av > bv) return sortConfig.dir === "asc" ? 1 : -1;
       return 0;
     });
     return list;
   }, [priorities, search, selectedDomain, sortConfig]);
 
-  const totalPages  = Math.max(1, Math.ceil(filteredSorted.length / itemsPerPage));
-  const safePage    = Math.min(currentPage, totalPages);
-  const paginated   = filteredSorted.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredSorted.length / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginated = filteredSorted.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
   const pageNumbers = getPaginationRange(safePage, totalPages);
+
   useEffect(() => { setCurrentPage(1); }, [search, selectedDomain, sortConfig]);
 
   const domainCount = uniqueDomains.length;
-  const topicCount  = priorities.length;
+  const topicCount = priorities.length;
 
-  // ─── Excel Import/Export ──────────────────────────────────────────────────
   async function handleExcelImport(event) {
     const file = event.target.files[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = async (e) => {
-      const workbook  = XLSX.read(e.target.result, { type: "binary" });
-      const json      = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+      const workbook = XLSX.read(e.target.result, { type: "binary" });
+      const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
       const formatted = json.map((item) => ({
-        domain: String(item.Domain || "").trim(), topic: String(item.Topic || "").trim(),
-        moduleOrder: Number(item["Module Order"] || 0), learnPriority: Number(item["Learn Priority"] || 0),
+        domain: String(item.Domain || "").trim(),
+        topic: String(item.Topic || "").trim(),
+        moduleOrder: Number(item["Module Order"] || 0),
+        learnPriority: Number(item["Learn Priority"] || 0),
       })).filter((item) => item.topic && item.domain);
-
-      const seenTopics     = new Set(priorities.map((p) => p.topic.trim().toLowerCase()));
+      const seenDomainTopics = new Set(priorities.map((p) => `${p.domain.trim().toLowerCase()}::${p.topic.trim().toLowerCase()}`));
       const seenPriorities = new Set(priorities.map((p) => Number(p.learnPriority)));
       const skipped = [], toInsert = [];
       for (const item of formatted) {
-        const topicKey = item.topic.toLowerCase(), prioVal = Number(item.learnPriority);
-        if (seenTopics.has(topicKey))     skipped.push(item.topic + " (duplicate topic)");
+        const compositeKey = `${item.domain.toLowerCase()}::${item.topic.toLowerCase()}`;
+        const prioVal = Number(item.learnPriority);
+        if (seenDomainTopics.has(compositeKey)) skipped.push(`${item.topic} in ${item.domain} (duplicate topic in same domain)`);
         else if (seenPriorities.has(prioVal)) skipped.push(item.topic + " (duplicate priority)");
-        else { toInsert.push(item); seenTopics.add(topicKey); seenPriorities.add(prioVal); }
+        else { toInsert.push(item); seenDomainTopics.add(compositeKey); seenPriorities.add(prioVal); }
       }
       if (!toInsert.length) { showToast(`⚠️ All ${formatted.length} rows skipped — duplicates found.`, "error"); return; }
       try {
@@ -214,10 +231,9 @@ export default function PrioritiesPage() {
     saveAs(new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: "application/octet-stream" }), "priorities.xlsx");
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────
-  // Check if typed topic already has saved values (for showing auto-fill indicator)
-  const topicHasSavedData = formData.topic && !editingId &&
-    priorities.find((p) => p.topic.trim().toLowerCase() === formData.topic.trim().toLowerCase());
+  const topicHasSavedData = formData.topic && formData.domain && !editingId &&
+    priorities.find((p) => p.domain.trim().toLowerCase() === formData.domain.trim().toLowerCase()
+      && p.topic.trim().toLowerCase() === formData.topic.trim().toLowerCase());
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
@@ -249,12 +265,8 @@ export default function PrioritiesPage() {
         {/* ── Form ── */}
         {formOpen && (
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-              {editingId ? "✏️ Edit Priority" : "➕ Add New Priority"}
-            </h2>
+            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">{editingId ? "✏️ Edit Priority" : "➕ Add New Priority"}</h2>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
-              {/* ── Domain ── */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Domain *</label>
                 <ComboBox name="domain" value={formData.domain} onChange={handleChange} options={uniqueDomains} placeholder="Search or type domain…" required className={inputCls} />
@@ -262,8 +274,6 @@ export default function PrioritiesPage() {
                   <p className="text-xs text-blue-500 dark:text-blue-400 mt-0.5">✦ New domain will be created</p>
                 )}
               </div>
-
-              {/* ── Topic (filtered by domain) ── */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Topic *</label>
                 <ComboBox name="topic" value={formData.topic} onChange={handleChange} options={uniqueTopicsForDomain} placeholder="Search or type topic…" required className={inputCls} />
@@ -273,8 +283,6 @@ export default function PrioritiesPage() {
                   </p>
                 )}
               </div>
-
-              {/* ── Module Order (auto-fill when topic exists) ── */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Module Order *{topicHasSavedData && <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span>}
@@ -282,16 +290,10 @@ export default function PrioritiesPage() {
                 <input
                   type="number" step="0.1" name="moduleOrder" placeholder="e.g. 1.2"
                   value={formData.moduleOrder} onChange={handleChange} required
-                  className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${
-                    topicHasSavedData
-                      ? "bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white border-green-300 dark:border-green-700"
-                      : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  }`}
+                  className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${topicHasSavedData ? "bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"}`}
                 />
                 {topicHasSavedData && <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Auto-filled from existing data</p>}
               </div>
-
-              {/* ── Learn Priority (auto-fill when topic exists) ── */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
                   Learn Priority *{topicHasSavedData && <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span>}
@@ -299,16 +301,10 @@ export default function PrioritiesPage() {
                 <input
                   type="number" name="learnPriority" placeholder="e.g. 5"
                   value={formData.learnPriority} onChange={handleChange} required
-                  className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${
-                    topicHasSavedData
-                      ? "bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white border-green-300 dark:border-green-700"
-                      : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  }`}
+                  className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${topicHasSavedData ? "bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"}`}
                 />
-                {topicHasSavedData && <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">⚠ This topic already exists — editing will update it</p>}
+                {topicHasSavedData && <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">⚠ This domain+topic already exists — editing will update it</p>}
               </div>
-
-              {/* ── Actions ── */}
               <div className="flex gap-3 sm:col-span-2 lg:col-span-4">
                 <button type="submit" disabled={submitting} className="flex-1 sm:flex-none sm:w-40 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors">
                   {submitting ? "Saving…" : editingId ? "Update" : "Add Priority"}
@@ -323,15 +319,29 @@ export default function PrioritiesPage() {
 
         {/* ── Filters ── */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-4 shadow-sm">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="flex flex-col gap-3">
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
               <input type="text" placeholder="Search domain or topic…" value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-9 pr-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400" />
             </div>
-            <select value={selectedDomain} onChange={(e) => setSelectedDomain(e.target.value)} className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2 rounded-lg text-sm text-gray-900 dark:text-white">
-              <option value="">All Domains</option>
-              {uniqueDomains.map((d) => <option key={d} value={d}>{d}</option>)}
-            </select>
+            {/* Domain Buttons — ordered by DOMAIN_ORDER */}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => setSelectedDomain("")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${!selectedDomain ? "bg-indigo-600 text-white border-indigo-600" : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+              >
+                All Domains
+              </button>
+              {uniqueDomains.map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setSelectedDomain(selectedDomain === d ? "" : d)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selectedDomain === d ? "bg-indigo-600 text-white border-indigo-600" : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
           </div>
           {(search || selectedDomain) && (
             <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t dark:border-gray-800">

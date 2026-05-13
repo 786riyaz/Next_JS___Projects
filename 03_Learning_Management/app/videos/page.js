@@ -1,143 +1,324 @@
-// app\videos\page.js
+// app/videos/page.js
 "use client";
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import ComboBox from "@/components/ComboBox";
+import moduleOrder from "../moduleOrder.js";
+
+// ── Fixed domain order ──────────────────────────────────────────────────────
+const DOMAIN_ORDER = moduleOrder.DOMAIN_ORDER;
+
+// Normalize: lowercase + remove spaces/slashes for fuzzy matching
+// e.g. "WebDev" → "webdev", "Web Dev" → "webdev", "AI/LLM" → "aillm"
+const norm = (s) => s.toLowerCase().replace(/[\s/]/g, "");
+const DOMAIN_ORDER_NORM = DOMAIN_ORDER.map(norm);
+
+function domainIndex(d) {
+  const n = norm(d);
+  const i = DOMAIN_ORDER_NORM.indexOf(n);
+  return i; // -1 if not found → goes to end
+}
+
+function sortDomains(domains) {
+  return [...domains].sort((a, b) => {
+    const ai = domainIndex(a);
+    const bi = domainIndex(b);
+    if (ai === -1 && bi === -1) return a.localeCompare(b);
+    if (ai === -1) return 1;
+    if (bi === -1) return -1;
+    return ai - bi;
+  });
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────────────
+function parseBool(val) {
+  if (typeof val === "boolean") return val;
+  if (typeof val === "string") return val.trim().toLowerCase() === "yes" || val.trim().toLowerCase() === "true";
+  return false;
+}
 
 function SortIcon({ field, sortConfig }) {
   if (sortConfig.field !== field) return <span className="ml-1 text-gray-400">↕</span>;
   return <span className="ml-1">{sortConfig.dir === "asc" ? "↑" : "↓"}</span>;
 }
+
 function getPaginationRange(current, total) {
   const maxVisible = 10;
   if (total <= maxVisible) return Array.from({ length: total }, (_, i) => i + 1);
   let start = Math.max(1, current - Math.floor(maxVisible / 2));
-  let end   = start + maxVisible - 1;
+  let end = start + maxVisible - 1;
   if (end > total) { end = total; start = Math.max(1, end - maxVisible + 1); }
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 }
+
 const inputCls = "border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 pr-8 rounded-lg text-sm text-gray-900 dark:text-white w-full";
 
+const DOMAIN_COLORS = [
+  { bg: "bg-indigo-100 dark:bg-indigo-900/50", text: "text-indigo-700 dark:text-indigo-300", dot: "bg-indigo-500" },
+  { bg: "bg-emerald-100 dark:bg-emerald-900/50", text: "text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500" },
+  { bg: "bg-orange-100 dark:bg-orange-900/50", text: "text-orange-700 dark:text-orange-300", dot: "bg-orange-500" },
+  { bg: "bg-pink-100 dark:bg-pink-900/50", text: "text-pink-700 dark:text-pink-300", dot: "bg-pink-500" },
+  { bg: "bg-cyan-100 dark:bg-cyan-900/50", text: "text-cyan-700 dark:text-cyan-300", dot: "bg-cyan-500" },
+  { bg: "bg-violet-100 dark:bg-violet-900/50", text: "text-violet-700 dark:text-violet-300", dot: "bg-violet-500" },
+  { bg: "bg-amber-100 dark:bg-amber-900/50", text: "text-amber-700 dark:text-amber-300", dot: "bg-amber-500" },
+  { bg: "bg-teal-100 dark:bg-teal-900/50", text: "text-teal-700 dark:text-teal-300", dot: "bg-teal-500" },
+];
+
+function TopicFilterDropdown({ grouped, value, onChange, allDomains }) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const ref = useRef(null);
+
+  const domainColorMap = useMemo(() => {
+    const map = {};
+    allDomains.forEach((d, i) => { map[d] = DOMAIN_COLORS[i % DOMAIN_COLORS.length]; });
+    return map;
+  }, [allDomains]);
+
+  useEffect(() => {
+    function handler(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const filtered = useMemo(() => {
+    if (!query.trim()) return grouped;
+    const q = query.toLowerCase();
+    return grouped
+      .map((g) => ({ ...g, topics: g.topics.filter((t) => t.toLowerCase().includes(q)) }))
+      .filter((g) => g.topics.length > 0 || g.domain.toLowerCase().includes(q));
+  }, [grouped, query]);
+
+  const selectedColor = value ? domainColorMap[grouped.find((g) => g.topics.includes(value))?.domain] : null;
+
+  function select(topic) { onChange(topic); setOpen(false); setQuery(""); }
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-center justify-between border dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 rounded-lg text-sm text-left"
+      >
+        {value ? (
+          <span className={`inline-flex items-center gap-1.5 font-medium ${selectedColor?.text || "text-gray-900 dark:text-white"}`}>
+            <span className={`w-2 h-2 rounded-full ${selectedColor?.dot || "bg-gray-400"}`} />
+            {value}
+          </span>
+        ) : (
+          <span className="text-gray-500">All Topics</span>
+        )}
+        <span className="text-gray-400 text-xs ml-2">{open ? "▲" : "▼"}</span>
+      </button>
+      {open && (
+        <div className="absolute z-50 left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg shadow-2xl max-h-72 flex flex-col">
+          <div className="p-2 border-b dark:border-gray-700">
+            <input
+              autoFocus
+              type="text"
+              placeholder="Search topics…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="w-full px-2 py-1.5 text-sm bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white rounded outline-none"
+            />
+          </div>
+          <div className="overflow-y-auto flex-1">
+            {!query && (
+              <div
+                onMouseDown={(e) => { e.preventDefault(); select(""); }}
+                className={`px-3 py-2 text-sm cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 ${!value ? "font-semibold bg-gray-50 dark:bg-gray-700" : ""}`}
+              >
+                All Topics
+              </div>
+            )}
+            {filtered.map((group) => {
+              const color = domainColorMap[group.domain] || DOMAIN_COLORS[0];
+              return (
+                <div key={group.domain}>
+                  <div className={`px-3 py-1 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 sticky top-0 ${color.bg} ${color.text}`}>
+                    <span className={`w-2 h-2 rounded-full ${color.dot}`} />
+                    {group.domain}
+                  </div>
+                  {group.topics.map((topic) => (
+                    <div
+                      key={topic}
+                      onMouseDown={(e) => { e.preventDefault(); select(topic); }}
+                      className={`px-4 py-2 text-sm cursor-pointer transition-colors ${topic === value ? `${color.bg} ${color.text} font-semibold` : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
+                    >
+                      {topic}
+                    </div>
+                  ))}
+                </div>
+              );
+            })}
+            {filtered.length === 0 && <div className="px-3 py-4 text-sm text-gray-400 text-center">No topics found</div>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function VideosPage() {
-  const [videos, setVideos]         = useState([]);
+  const [videos, setVideos] = useState([]);
   const [priorities, setPriorities] = useState([]);
-  const [editingId, setEditingId]   = useState(null);
-  const [loading, setLoading]       = useState(true);
+  const [editingId, setEditingId] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [toast, setToast]           = useState(null);
-
-  // filters
-  const [search, setSearch]               = useState("");
+  const [toast, setToast] = useState(null);
+  const [search, setSearch] = useState("");
   const [selectedDomain, setSelectedDomain] = useState("");
-  const [selectedTopic, setSelectedTopic]   = useState("");
-  const [selectedSeries, setSelectedSeries] = useState("");
-  const [downloadFilter, setDownloadFilter] = useState("all");
-
+  const [selectedTopic, setSelectedTopic] = useState("");
+  const [seriesFilter, setSeriesFilter] = useState(false);
+  const [notSeriesFilter, setNotSeriesFilter] = useState(false);
+  const [downloadedFilter, setDownloadedFilter] = useState(false);
+  const [notDownloadedFilter, setNotDownloadedFilter] = useState(false);
   const [sortConfig, setSortConfig] = useState({ field: "priority", dir: "asc" });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const emptyForm = { priority: "", topic: "", videoName: "", channelName: "", youtubeLink: "", series: "", downloaded: false };
+  const emptyForm = { domain: "", priority: "", topic: "", videoName: "", channelName: "", youtubeLink: "", series: false, downloaded: false };
   const [formData, setFormData] = useState(emptyForm);
   const [formOpen, setFormOpen] = useState(false);
-  // form-level domain selector (not stored, just for filtering topics in form)
-  const [formDomain, setFormDomain] = useState("");
+  const [ytFetching, setYtFetching] = useState(false);
+  const ytDebounceRef = useRef(null);
+  const [importModal, setImportModal] = useState(false);
+  const [importDefaultTopic, setImportDefaultTopic] = useState("");
+  const [importDefaultDomain, setImportDefaultDomain] = useState("");
+  const importFileRef = useRef(null);
 
   const showToast = useCallback((msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 4000);
   }, []);
 
-  // ─── Build lookup maps from priorities ───────────────────────────────────
-  const topicDomainMap = useMemo(() => {
-    const map = {};
-    priorities.forEach((p) => { if (p.topic) map[p.topic] = p.domain || ""; });
-    return map;
-  }, [priorities]);
-
-  // topic → learnPriority map (live sync)
   const topicPriorityMap = useMemo(() => {
     const map = {};
-    priorities.forEach((p) => { if (p.topic) map[p.topic] = p.learnPriority; });
+    priorities.forEach((p) => { if (p.topic && p.domain) map[`${p.domain}::${p.topic}`] = p.learnPriority; });
     return map;
   }, [priorities]);
 
-  // ─── Fetch ───────────────────────────────────────────────────────────────
   async function fetchVideos() {
     setLoading(true);
     try {
-      const res  = await fetch("/api/videos");
-      const data = await res.json();
-      setVideos(data);
-    } catch { showToast("Failed to load videos", "error"); }
-    finally  { setLoading(false); }
+      const res = await fetch("/api/videos");
+      setVideos(await res.json());
+    } catch {
+      showToast("Failed to load videos", "error");
+    } finally {
+      setLoading(false);
+    }
   }
+
   async function fetchPriorities() {
     try {
-      const res  = await fetch("/api/priorities");
+      const res = await fetch("/api/priorities");
       const data = await res.json();
       setPriorities(data);
-    } catch { showToast("Failed to load priorities", "error"); }
+      return data;
+    } catch {
+      showToast("Failed to load priorities", "error");
+    }
   }
-  useEffect(() => { fetchVideos(); fetchPriorities(); /* eslint-disable-next-line */ }, []);
 
-  // ─── Derived option lists ─────────────────────────────────────────────────
+  useEffect(() => {
+    fetchVideos();
+    fetchPriorities(); /* eslint-disable-next-line */
+  }, []);
+
+  // ── Sorted unique domains following DOMAIN_ORDER ─────────────────────────
   const uniqueDomains = useMemo(() => {
-    const d = new Set(priorities.map((p) => p.domain).filter(Boolean));
-    return [...d].sort();
-  }, [priorities]);
+    const fromPriorities = priorities.map((p) => p.domain);
+    const fromVideos = videos.map((v) => v.domain);
+    return sortDomains([...new Set([...fromPriorities, ...fromVideos].filter(Boolean))]);
+  }, [priorities, videos]);
 
-  // Topics in form filtered by formDomain
   const formTopicOptions = useMemo(() => {
-    const source = formDomain
-      ? priorities.filter((p) => p.domain === formDomain)
-      : priorities;
-    return [...new Set(source.map((p) => p.topic).filter(Boolean))].sort();
-  }, [priorities, formDomain]);
+    if (!formData.domain) return [...new Set(priorities.map((p) => p.topic).filter(Boolean))].sort();
+    return [...new Set(priorities.filter((p) => p.domain === formData.domain).map((p) => p.topic).filter(Boolean))].sort();
+  }, [priorities, formData.domain]);
 
-  // Topics in filter bar filtered by selectedDomain
-  const filterTopicOptions = useMemo(() => {
-    return priorities
-      .filter((p) => !selectedDomain || p.domain === selectedDomain)
-      .map((p) => p.topic);
+  const filterTopicGrouped = useMemo(() => {
+    const domainMap = {};
+    priorities.forEach((p) => {
+      if (!p.topic || !p.domain) return;
+      if (selectedDomain && p.domain !== selectedDomain) return;
+      if (!domainMap[p.domain]) domainMap[p.domain] = new Set();
+      domainMap[p.domain].add(p.topic);
+    });
+    // Sort domains by DOMAIN_ORDER
+    return sortDomains(Object.keys(domainMap))
+      .map((domain) => ({ domain, topics: [...domainMap[domain]].sort() }));
   }, [priorities, selectedDomain]);
 
   const uniqueChannels = useMemo(() => [...new Set(videos.map((v) => v.channelName).filter(Boolean))].sort(), [videos]);
-  const uniqueSeries   = useMemo(() => [...new Set(videos.map((v) => v.series).filter(Boolean))].sort(), [videos]);
 
-  // auto-filled domain for current form topic
-  const autoFilledDomain = topicDomainMap[formData.topic] || formDomain || "";
-
-  // ─── Duplicate helpers ────────────────────────────────────────────────────
   function normalizeYtUrl(url) {
-    try { const u = new URL(url); const v = u.searchParams.get("v"); return v ? v : url.trim().toLowerCase(); }
-    catch { return url.trim().toLowerCase(); }
-  }
-  function isDuplicateVideo(youtubeLink, videoName, excludeId = null) {
-    const normUrl  = normalizeYtUrl(youtubeLink);
-    const normName = videoName.trim().toLowerCase();
-    return videos.find((v) => v._id !== excludeId && (normalizeYtUrl(v.youtubeLink) === normUrl || v.videoName.trim().toLowerCase() === normName));
+    try {
+      const u = new URL(url);
+      const v = u.searchParams.get("v");
+      return v ? v : url.trim().toLowerCase();
+    } catch {
+      return url.trim().toLowerCase();
+    }
   }
 
-  // ─── Form handlers ────────────────────────────────────────────────────────
+  function isDuplicateVideo(youtubeLink, videoName, channelName, excludeId = null) {
+    const normUrl = normalizeYtUrl(youtubeLink);
+    const normName = videoName.trim().toLowerCase();
+    const normChannel = (channelName || "").trim().toLowerCase();
+    return videos.find((v) => {
+      if (v._id === excludeId) return false;
+      if (normalizeYtUrl(v.youtubeLink) === normUrl) return true;
+      const vChannel = (v.channelName || "").trim().toLowerCase();
+      if (v.videoName.trim().toLowerCase() === normName && vChannel === normChannel && normChannel !== "") return true;
+      return false;
+    });
+  }
+
+  function isValidYoutubeUrl(url) {
+    return url && (url.includes("youtube.com/watch") || url.includes("youtu.be/"));
+  }
+
+  async function fetchYoutubeMeta(url) {
+    if (!isValidYoutubeUrl(url)) return;
+    setYtFetching(true);
+    try {
+      const res = await fetch(`/api/youtube-meta?url=${encodeURIComponent(url)}`);
+      const data = await res.json();
+      if (data.title) {
+        setFormData((prev) => ({ ...prev, videoName: prev.videoName || data.title, channelName: prev.channelName || data.channel }));
+        showToast("✓ Video info auto-filled from YouTube");
+      }
+    } catch { /* silent */ } finally {
+      setYtFetching(false);
+    }
+  }
+
   function handleFormDomainChange(e) {
     const domain = e.target.value;
-    setFormDomain(domain);
-    // clear topic if it doesn't belong to new domain
-    const topicsInDomain = priorities.filter((p) => p.domain === domain).map((p) => p.topic);
-    if (domain && !topicsInDomain.includes(formData.topic)) {
-      setFormData((prev) => ({ ...prev, topic: "", priority: "" }));
-    }
+    setFormData((prev) => {
+      const topicsInNewDomain = priorities.filter((p) => p.domain === domain).map((p) => p.topic);
+      const keepTopic = topicsInNewDomain.includes(prev.topic);
+      return { ...prev, domain, ...(keepTopic ? {} : { topic: "", priority: "" }) };
+    });
   }
 
   function handleChange(e) {
     const { name, value, checked, type } = e.target;
     if (name === "topic") {
-      const priority = topicPriorityMap[value] ?? formData.priority;
-      const domain   = topicDomainMap[value] || formDomain;
-      setFormDomain(domain);
-      setFormData((prev) => ({ ...prev, topic: value, priority }));
+      setFormData((prev) => {
+        const key = prev.domain ? `${prev.domain}::${value}` : "";
+        const priority = key ? (topicPriorityMap[key] ?? "") : "";
+        return { ...prev, topic: value, priority };
+      });
+      return;
+    }
+    if (name === "youtubeLink") {
+      setFormData((prev) => ({ ...prev, youtubeLink: value }));
+      if (ytDebounceRef.current) clearTimeout(ytDebounceRef.current);
+      ytDebounceRef.current = setTimeout(() => fetchYoutubeMeta(value), 800);
       return;
     }
     setFormData((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
@@ -146,32 +327,64 @@ export default function VideosPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     if (!formData.topic || !formData.videoName || !formData.youtubeLink) {
-      showToast("Please fill Topic, Video Name and YouTube Link", "error"); return;
+      showToast("Please fill Topic, Video Name and YouTube Link", "error");
+      return;
     }
-    const dupEntry = isDuplicateVideo(formData.youtubeLink, formData.videoName, editingId);
+    const dupEntry = isDuplicateVideo(formData.youtubeLink, formData.videoName, formData.channelName, editingId);
     if (dupEntry) {
-      const reason = normalizeYtUrl(dupEntry.youtubeLink) === normalizeYtUrl(formData.youtubeLink) ? "YouTube link" : "video name";
-      showToast(`⚠️ Duplicate! A video with the same ${reason} already exists: "${dupEntry.videoName}"`, "error"); return;
+      const normUrl = normalizeYtUrl(dupEntry.youtubeLink) === normalizeYtUrl(formData.youtubeLink);
+      const reason = normUrl ? "YouTube link" : `video name in channel "${dupEntry.channelName || "unknown"}"`;
+      showToast(`⚠️ Duplicate! A video with the same ${reason} already exists: "${dupEntry.videoName}"`, "error");
+      return;
     }
     setSubmitting(true);
-    const payload = { ...formData, priority: Number(formData.priority) };
+    // Ensure series/downloaded are always boolean
+    const payload = {
+      ...formData,
+      domain: formData.domain || "",
+      priority: Number(formData.priority),
+      series: Boolean(formData.series),
+      downloaded: Boolean(formData.downloaded),
+    };
     try {
+      const topicExists = priorities.some(
+        (p) => p.domain.trim().toLowerCase() === (formData.domain || "").trim().toLowerCase() && p.topic.trim().toLowerCase() === formData.topic.trim().toLowerCase(),
+      );
+      if (!topicExists && formData.domain && formData.topic) {
+        await fetch("/api/priorities", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ domain: formData.domain, topic: formData.topic, moduleOrder: 0, learnPriority: 0 }),
+        });
+        await fetchPriorities();
+      }
       const res = editingId
         ? await fetch(`/api/videos/${editingId}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) })
-        : await fetch("/api/videos",               { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+        : await fetch("/api/videos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
       if (res.ok) { showToast(editingId ? "Video updated!" : "Video added!"); resetForm(); fetchVideos(); }
       else showToast("Save failed", "error");
-    } catch { showToast("Network error", "error"); }
-    finally  { setSubmitting(false); }
+    } catch {
+      showToast("Network error", "error");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   function handleEdit(item) {
     setEditingId(item._id);
-    const domain = topicDomainMap[item.topic] || "";
-    setFormDomain(domain);
-    // Sync priority from priorities map (live), fall back to stored value
-    const livePriority = topicPriorityMap[item.topic] ?? item.priority;
-    setFormData({ priority: livePriority, topic: item.topic, videoName: item.videoName, channelName: item.channelName, youtubeLink: item.youtubeLink, series: item.series, downloaded: item.downloaded });
+    const domain = item.domain || "";
+    const key = `${domain}::${item.topic}`;
+    const livePriority = topicPriorityMap[key] ?? item.priority;
+    setFormData({
+      domain,
+      priority: livePriority,
+      topic: item.topic,
+      videoName: item.videoName,
+      channelName: item.channelName,
+      youtubeLink: item.youtubeLink,
+      series: parseBool(item.series),   // FIX: normalize to boolean on edit
+      downloaded: parseBool(item.downloaded),
+    });
     setFormOpen(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -184,23 +397,34 @@ export default function VideosPage() {
     } catch { showToast("Delete failed", "error"); }
   }
 
-  function resetForm() { setEditingId(null); setFormData(emptyForm); setFormDomain(""); setFormOpen(false); }
+  function resetForm() { setEditingId(null); setFormData(emptyForm); setFormOpen(false); }
 
   async function toggleDownloaded(item) {
     try {
-      await fetch(`/api/videos/${item._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...item, downloaded: !item.downloaded }) });
+      await fetch(`/api/videos/${item._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          domain: item.domain || "",
+          priority: item.priority,
+          topic: item.topic,
+          videoName: item.videoName,
+          channelName: item.channelName,
+          youtubeLink: item.youtubeLink,
+          series: parseBool(item.series),
+          downloaded: !parseBool(item.downloaded),
+        }),
+      });
       fetchVideos();
     } catch { showToast("Update failed", "error"); }
   }
 
   function handleSort(field) {
-    setSortConfig((prev) => prev.field === field ? { field, dir: prev.dir === "asc" ? "desc" : "asc" } : { field, dir: "asc" });
+    setSortConfig((prev) => (prev.field === field ? { field, dir: prev.dir === "asc" ? "desc" : "asc" } : { field, dir: "asc" }));
     setCurrentPage(1);
   }
 
-  // When domain filter changes, clear topic filter if it doesn't belong to new domain
-  function handleDomainFilterChange(e) {
-    const domain = e.target.value;
+  function handleDomainFilterChange(domain) {
     setSelectedDomain(domain);
     if (domain && selectedTopic) {
       const domainTopics = priorities.filter((p) => p.domain === domain).map((p) => p.topic);
@@ -208,74 +432,144 @@ export default function VideosPage() {
     }
   }
 
-  // ─── Filter + Sort ────────────────────────────────────────────────────────
   const filteredSorted = useMemo(() => {
     let list = videos.filter((item) => {
-      const domain = topicDomainMap[item.topic] || "";
+      const domain = item.domain || "";
       const q = search.toLowerCase();
-      const matchSearch  = !q || item.topic?.toLowerCase().includes(q) || item.videoName?.toLowerCase().includes(q) || item.channelName?.toLowerCase().includes(q) || item.series?.toLowerCase().includes(q) || domain.toLowerCase().includes(q);
-      const matchTopic   = !selectedTopic  || item.topic  === selectedTopic;
-      const matchDomain  = !selectedDomain || domain      === selectedDomain;
-      const matchSeries  = !selectedSeries || item.series === selectedSeries;
-      const matchDl      = downloadFilter === "all" ? true : downloadFilter === "downloaded" ? item.downloaded : !item.downloaded;
+      const matchSearch = !q || item.topic?.toLowerCase().includes(q) || item.videoName?.toLowerCase().includes(q) || item.channelName?.toLowerCase().includes(q) || domain.toLowerCase().includes(q);
+      const matchTopic = !selectedTopic || item.topic === selectedTopic;
+      const matchDomain = !selectedDomain || domain === selectedDomain;
+      // FIX: normalize series/downloaded to boolean before comparing
+      const isSeries = parseBool(item.series);
+      const isDownloaded = parseBool(item.downloaded);
+      let matchSeries = true;
+      if (seriesFilter && !notSeriesFilter) matchSeries = isSeries === true;
+      else if (!seriesFilter && notSeriesFilter) matchSeries = isSeries !== true;
+      let matchDl = true;
+      if (downloadedFilter && !notDownloadedFilter) matchDl = isDownloaded === true;
+      else if (!downloadedFilter && notDownloadedFilter) matchDl = isDownloaded !== true;
       return matchSearch && matchTopic && matchDomain && matchSeries && matchDl;
     });
     list = [...list].sort((a, b) => {
       let av, bv;
-      if (sortConfig.field === "domain")    { av = topicDomainMap[a.topic] || "";    bv = topicDomainMap[b.topic] || ""; }
-      else if (sortConfig.field === "priority") { av = topicPriorityMap[a.topic] ?? a.priority ?? 0; bv = topicPriorityMap[b.topic] ?? b.priority ?? 0; }
-      else                                  { av = a[sortConfig.field] ?? "";         bv = b[sortConfig.field] ?? ""; }
+      if (sortConfig.field === "domain") { av = a.domain || ""; bv = b.domain || ""; }
+      else if (sortConfig.field === "priority") { av = a.priority ?? 0; bv = b.priority ?? 0; }
+      else if (sortConfig.field === "series") { av = parseBool(a.series) ? 1 : 0; bv = parseBool(b.series) ? 1 : 0; }
+      else if (sortConfig.field === "downloaded") { av = parseBool(a.downloaded) ? 1 : 0; bv = parseBool(b.downloaded) ? 1 : 0; }
+      else { av = a[sortConfig.field] ?? ""; bv = b[sortConfig.field] ?? ""; }
       if (typeof av === "string") av = av.toLowerCase();
       if (typeof bv === "string") bv = bv.toLowerCase();
       if (av < bv) return sortConfig.dir === "asc" ? -1 : 1;
-      if (av > bv) return sortConfig.dir === "asc" ?  1 : -1;
+      if (av > bv) return sortConfig.dir === "asc" ? 1 : -1;
       return 0;
     });
     return list;
-  }, [videos, search, selectedTopic, selectedDomain, selectedSeries, downloadFilter, sortConfig, topicDomainMap, topicPriorityMap]);
+  }, [videos, search, selectedTopic, selectedDomain, seriesFilter, notSeriesFilter, downloadedFilter, notDownloadedFilter, sortConfig]);
 
-  const totalPages      = Math.max(1, Math.ceil(filteredSorted.length / itemsPerPage));
-  const safePage        = Math.min(currentPage, totalPages);
+  const totalPages = Math.max(1, Math.ceil(filteredSorted.length / itemsPerPage));
+  const safePage = Math.min(currentPage, totalPages);
   const paginatedVideos = filteredSorted.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
-  const pageNumbers     = getPaginationRange(safePage, totalPages);
-  useEffect(() => { setCurrentPage(1); }, [search, selectedTopic, selectedDomain, selectedSeries, downloadFilter, sortConfig]);
+  const pageNumbers = getPaginationRange(safePage, totalPages);
 
-  // ─── Excel Import/Export ──────────────────────────────────────────────────
+  useEffect(() => { setCurrentPage(1); }, [search, selectedTopic, selectedDomain, seriesFilter, notSeriesFilter, downloadedFilter, notDownloadedFilter, sortConfig]);
+
   async function handleExcelImport(event) {
-    const file = event.target.files[0]; if (!file) return;
+    const file = event.target.files[0];
+    if (!file) return;
     const reader = new FileReader();
     reader.onload = async (e) => {
-      const workbook  = XLSX.read(e.target.result, { type: "binary" });
-      const json      = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-      const formatted = json.map((item) => ({
-        priority: Number(item.Priority || 0), topic: item.Topic || "", videoName: item["Video Name"] || "",
-        channelName: item["Channel Name"] || "", youtubeLink: item["YouTube Link"] || "",
-        series: item.Series || "", downloaded: item.Downloaded === "Yes" || item.Downloaded === true,
-      })).filter((item) => item.videoName && item.youtubeLink);
-      const existingUrls  = new Set(videos.map((v) => normalizeYtUrl(v.youtubeLink)));
-      const existingNames = new Set(videos.map((v) => v.videoName.trim().toLowerCase()));
-      const skipped = [], toInsert = [];
-      for (const item of formatted) {
-        const normUrl = normalizeYtUrl(item.youtubeLink), normName = item.videoName.trim().toLowerCase();
-        if (existingUrls.has(normUrl))       skipped.push(`"${item.videoName}" (duplicate YouTube link)`);
-        else if (existingNames.has(normName)) skipped.push(`"${item.videoName}" (duplicate video name)`);
-        else { toInsert.push(item); existingUrls.add(normUrl); existingNames.add(normName); }
+      const workbook = XLSX.read(e.target.result, { type: "binary" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const defaultTopic = importDefaultTopic.trim();
+      const defaultDomain = importDefaultDomain.trim();
+      const defaultKey = defaultDomain && defaultTopic ? `${defaultDomain}::${defaultTopic}` : "";
+      const defaultPriority = defaultKey ? (topicPriorityMap[defaultKey] ?? 0) : 0;
+      const rawRows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+      const firstRow = (rawRows[0] || []).map((c) => String(c || "").trim());
+      const hasHeader = firstRow.some((c) => /youtube link|videoname|topic|channel|priority/i.test(c));
+      let formatted;
+      if (hasHeader) {
+        const json = XLSX.utils.sheet_to_json(sheet);
+        formatted = json.map((item) => {
+          const topic = (item.Topic || "").trim() || defaultTopic;
+          const domain = (item.Domain || "").trim() || defaultDomain;
+          const key = domain && topic ? `${domain}::${topic}` : "";
+          const priority = key ? (topicPriorityMap[key] ?? Number(item.Priority || defaultPriority)) : Number(item.Priority || 0);
+          return {
+            priority,
+            topic,
+            domain,
+            videoName: (item["Video Name"] || "").trim(),
+            channelName: (item["Channel Name"] || "").trim(),
+            youtubeLink: (item["YouTube Link"] || String(Object.values(item)[0] || "")).trim(),
+            // FIX: use parseBool to handle "Yes"/"No"/true/false/undefined
+            series: parseBool(item.Series),
+            downloaded: parseBool(item.Downloaded),
+          };
+        });
+      } else {
+        formatted = rawRows
+          .flatMap((row) => row.map((cell) => String(cell || "").trim()))
+          .filter((cell) => cell.includes("youtube.com") || cell.includes("youtu.be"))
+          .map((url) => ({ priority: defaultPriority, topic: defaultTopic, domain: defaultDomain, videoName: "", channelName: "", youtubeLink: url, series: false, downloaded: false }));
       }
-      if (!toInsert.length) { showToast(`⚠️ All ${formatted.length} rows skipped — duplicates found.`, "error"); return; }
-      try {
-        for (const item of toInsert) await fetch("/api/videos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(item) });
-        showToast(skipped.length ? `Imported ${toInsert.length} videos. Skipped ${skipped.length} duplicate(s).` : `Imported ${toInsert.length} videos successfully.`, skipped.length ? "warn" : "success");
-        fetchVideos();
-      } catch { showToast("Import failed", "error"); }
+      const validFormatted = formatted.filter((item) => item.youtubeLink);
+      const existingUrls = new Set(videos.map((v) => normalizeYtUrl(v.youtubeLink)));
+      const existingChannelNames = new Set(videos.map((v) => `${(v.channelName || "").trim().toLowerCase()}::${v.videoName.trim().toLowerCase()}`));
+      const skipped = [], toInsert = [];
+      for (const item of validFormatted) {
+        const normUrl = normalizeYtUrl(item.youtubeLink);
+        const channelKey = `${(item.channelName || "").trim().toLowerCase()}::${(item.videoName || "").trim().toLowerCase()}`;
+        if (existingUrls.has(normUrl)) { skipped.push(`"${item.videoName || item.youtubeLink}" (duplicate YouTube link)`); continue; }
+        if (item.videoName && existingChannelNames.has(channelKey)) { skipped.push(`"${item.videoName}" (duplicate name in same channel)`); continue; }
+        toInsert.push(item);
+        existingUrls.add(normUrl);
+        if (item.videoName) existingChannelNames.add(channelKey);
+      }
+      if (!toInsert.length) { showToast(`⚠️ All ${validFormatted.length} rows are duplicates — nothing imported.`, "warn"); return; }
+      for (let i = 0; i < toInsert.length; i++) {
+        const item = toInsert[i];
+        if (item.videoName && item.channelName) continue;
+        setToast({ msg: `⟳ Fetching YouTube info… ${i + 1}/${toInsert.length}`, type: "warn" });
+        try {
+          const res = await fetch(`/api/youtube-meta?url=${encodeURIComponent(item.youtubeLink)}`);
+          const data = await res.json();
+          if (data.title) item.videoName = item.videoName || data.title;
+          if (data.channel) item.channelName = item.channelName || data.channel;
+        } catch { /* save with blank fields */ }
+      }
+      let saved = 0, fetchFailed = 0, missingTopic = 0, saveFailed = 0;
+      for (const item of toInsert) {
+        if (!item.videoName) { fetchFailed++; continue; }
+        if (!item.topic) { missingTopic++; continue; }
+        try {
+          const res = await fetch("/api/videos", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(item) });
+          if (res.ok) { saved++; } else { saveFailed++; }
+        } catch { saveFailed++; }
+      }
+      const parts = ["Imported " + saved + " video(s)."];
+      if (skipped.length) parts.push(skipped.length + " duplicate(s) skipped.");
+      if (missingTopic > 0) parts.push(missingTopic + " skipped (Topic column blank).");
+      if (fetchFailed > 0) parts.push(fetchFailed + " skipped (YouTube title not found).");
+      if (saveFailed > 0) parts.push(saveFailed + " failed to save.");
+      showToast(parts.join(" "), saved === 0 ? "error" : skipped.length || missingTopic || fetchFailed || saveFailed ? "warn" : "success");
+      fetchVideos();
     };
-    reader.readAsBinaryString(file); event.target.value = "";
+    reader.readAsBinaryString(file);
+    event.target.value = "";
   }
 
   function exportToExcel() {
+    // FIX: always export "Yes"/"No" for series and downloaded
     const data = filteredSorted.map((item) => ({
-      Domain: topicDomainMap[item.topic] || "", Priority: item.priority, Topic: item.topic,
-      "Video Name": item.videoName, "Channel Name": item.channelName, "YouTube Link": item.youtubeLink,
-      Series: item.series, Downloaded: item.downloaded ? "Yes" : "No",
+      Domain: item.domain || "",
+      Priority: item.priority,
+      Topic: item.topic,
+      "Video Name": item.videoName,
+      "Channel Name": item.channelName,
+      "YouTube Link": item.youtubeLink,
+      Series: parseBool(item.series) ? "Yes" : "No",
+      Downloaded: parseBool(item.downloaded) ? "Yes" : "No",
     }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Videos");
@@ -283,15 +577,19 @@ export default function VideosPage() {
   }
 
   function getYtId(url) {
-    try { const u = new URL(url); return u.searchParams.get("v") || u.pathname.split("/").pop() || null; }
-    catch { return url.split("v=")[1]?.split("&")[0] || null; }
+    try {
+      const u = new URL(url);
+      return u.searchParams.get("v") || u.pathname.split("/").pop() || null;
+    } catch {
+      return url.split("v=")[1]?.split("&")[0] || null;
+    }
   }
 
-  const totalVideos     = videos.length;
-  const downloadedCount = videos.filter((v) => v.downloaded).length;
-  const pendingCount    = totalVideos - downloadedCount;
+  const totalVideos = videos.length;
+  const downloadedCount = videos.filter((v) => parseBool(v.downloaded)).length;
+  const pendingCount = totalVideos - downloadedCount;
+  const hasActiveFilter = search || selectedDomain || selectedTopic || seriesFilter || notSeriesFilter || downloadedFilter || notDownloadedFilter;
 
-  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {toast && (
@@ -310,111 +608,127 @@ export default function VideosPage() {
             <button onClick={() => { setFormOpen((o) => !o); if (formOpen) resetForm(); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
               {formOpen ? "✕ Close Form" : "+ Add Video"}
             </button>
-            <label className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors">
-              ↑ Import Excel<input type="file" accept=".xlsx,.xls" hidden onChange={handleExcelImport} />
-            </label>
-            <button onClick={exportToExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-              ↓ Export ({filteredSorted.length})
-            </button>
+            <button onClick={() => setImportModal(true)} className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">↑ Import Excel</button>
+            <input ref={importFileRef} type="file" accept=".xlsx,.xls" hidden onChange={handleExcelImport} />
+            <button onClick={exportToExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">↓ Export ({filteredSorted.length})</button>
           </div>
         </div>
+
+        {/* ── Import Modal ── */}
+        {importModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={() => setImportModal(false)}>
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl p-6 w-full max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+              <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">↑ Import Excel</h2>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                If your Excel rows have blank <strong>Domain</strong> or <strong>Topic</strong> columns, set defaults below.
+              </p>
+              <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Default Domain (for blank rows)</label>
+                  <ComboBox
+                    name="importDomain"
+                    value={importDefaultDomain}
+                    onChange={(e) => { setImportDefaultDomain(e.target.value); setImportDefaultTopic(""); }}
+                    options={uniqueDomains}
+                    placeholder="Select or type domain…"
+                    className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 pr-8 rounded-lg text-sm text-gray-900 dark:text-white w-full"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Default Topic (for blank rows)</label>
+                  <ComboBox
+                    name="importTopic"
+                    value={importDefaultTopic}
+                    onChange={(e) => setImportDefaultTopic(e.target.value)}
+                    options={
+                      importDefaultDomain
+                        ? priorities.filter((p) => p.domain === importDefaultDomain).map((p) => p.topic).filter(Boolean)
+                        : priorities.map((p) => p.topic).filter(Boolean)
+                    }
+                    placeholder="Select or type topic…"
+                    className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 pr-8 rounded-lg text-sm text-gray-900 dark:text-white w-full"
+                  />
+                  {importDefaultTopic && <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Will be applied to all rows with blank Topic</p>}
+                </div>
+              </div>
+              <div className="flex gap-3 mt-5">
+                <button onClick={() => { setImportModal(false); importFileRef.current?.click(); }} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors">
+                  Choose File & Import
+                </button>
+                <button onClick={() => setImportModal(false)} className="flex-1 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* ── Form ── */}
         {formOpen && (
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 shadow-sm">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">
-              {editingId ? "✏️ Edit Video" : "➕ Add New Video"}
-            </h2>
+            <h2 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">{editingId ? "✏️ Edit Video" : "➕ Add New Video"}</h2>
             <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-
-              {/* ── Domain (searchable, filters topics) ── */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Domain</label>
-                <ComboBox
-                  name="formDomain"
-                  value={formDomain}
-                  onChange={handleFormDomainChange}
-                  options={uniqueDomains}
-                  placeholder="Select domain first…"
-                  className={inputCls}
-                />
-                {formDomain && !uniqueDomains.find((d) => d.toLowerCase() === formDomain.toLowerCase()) && (
-                  <p className="text-xs text-blue-500 mt-0.5">✦ New domain</p>
+                <ComboBox name="formDomain" value={formData.domain} onChange={handleFormDomainChange} options={uniqueDomains} placeholder="Select or type domain…" className={inputCls} />
+                {formData.domain && !uniqueDomains.find((d) => d.toLowerCase() === formData.domain.toLowerCase()) && (
+                  <p className="text-xs text-blue-500 dark:text-blue-400 mt-0.5">✦ New domain will be created</p>
                 )}
               </div>
-
-              {/* ── Topic (filtered by domain) ── */}
               <div className="flex flex-col gap-1">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Topic *</label>
-                <ComboBox
-                  name="topic"
-                  value={formData.topic}
-                  onChange={handleChange}
-                  options={formTopicOptions}
-                  placeholder={formDomain ? "Search topics…" : "Select domain first…"}
-                  required
-                  className={inputCls}
-                />
-                {formDomain && (
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {formTopicOptions.length > 0 ? `${formTopicOptions.length} topics in "${formDomain}"` : "No topics in this domain"}
-                  </p>
+                <ComboBox name="topic" value={formData.topic} onChange={handleChange} options={formTopicOptions} placeholder={formData.domain ? "Search topics…" : "Select domain first…"} required className={inputCls} />
+                {formData.domain && (
+                  <p className="text-xs text-gray-400 mt-0.5">{formTopicOptions.length > 0 ? `${formTopicOptions.length} topics in "${formData.domain}"` : "No topics in this domain"}</p>
                 )}
               </div>
-
-              {/* ── Priority (auto-filled from priorities, editable) ── */}
               <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Priority <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span></label>
+                <input
+                  type="number" name="priority" placeholder="Auto-filled from topic" value={formData.priority} onChange={handleChange}
+                  className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${formData.priority !== "" ? "bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"}`}
+                />
+                {formData.topic && formData.priority !== "" && <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Synced from priorities</p>}
+              </div>
+              <div className="flex flex-col gap-1 sm:col-span-2 lg:col-span-3">
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
-                  Priority <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span>
+                  YouTube Link *{ytFetching && <span className="ml-2 text-blue-500 normal-case font-normal animate-pulse">⟳ Fetching info…</span>}
                 </label>
                 <input
-                  type="number"
-                  name="priority"
-                  placeholder="Auto-filled from topic"
-                  value={formData.priority}
-                  onChange={handleChange}
-                  className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${
-                    topicPriorityMap[formData.topic] != null
-                      ? "bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white border-green-300 dark:border-green-700"
-                      : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                  }`}
+                  type="url" name="youtubeLink" placeholder="Paste YouTube link — video name & channel will auto-fill"
+                  value={formData.youtubeLink} onChange={handleChange} required
+                  className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 rounded-lg text-sm text-gray-900 dark:text-white"
                 />
-                {formData.topic && topicPriorityMap[formData.topic] != null && (
-                  <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Synced from priorities</p>
-                )}
+                {!ytFetching && isValidYoutubeUrl(formData.youtubeLink) && <p className="text-xs text-green-600 dark:text-green-400 mt-0.5">✓ Valid YouTube URL detected</p>}
               </div>
-
-              {/* ── Video Name ── */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Video Name *</label>
-                <input type="text" name="videoName" placeholder="Video name" value={formData.videoName} onChange={handleChange} required className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 rounded-lg text-sm text-gray-900 dark:text-white" />
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Video Name *{formData.videoName && isValidYoutubeUrl(formData.youtubeLink) && <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span>}
+                </label>
+                <input
+                  type="text" name="videoName" placeholder="Auto-filled from YouTube link" value={formData.videoName} onChange={handleChange} required
+                  className={`border dark:border-gray-700 p-2.5 rounded-lg text-sm w-full ${formData.videoName && isValidYoutubeUrl(formData.youtubeLink) ? "bg-green-50 dark:bg-green-900/20 text-gray-900 dark:text-white border-green-300 dark:border-green-700" : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white"}`}
+                />
               </div>
-
-              {/* ── Channel Name ── */}
               <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Channel Name</label>
-                <ComboBox name="channelName" value={formData.channelName} onChange={handleChange} options={uniqueChannels} placeholder="Search or type channel…" className={inputCls} />
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  Channel Name{formData.channelName && isValidYoutubeUrl(formData.youtubeLink) && <span className="ml-1 text-gray-400 normal-case font-normal">(auto-filled)</span>}
+                </label>
+                <ComboBox
+                  name="channelName" value={formData.channelName} onChange={handleChange} options={uniqueChannels} placeholder="Auto-filled from YouTube link"
+                  className={`${inputCls} ${formData.channelName && isValidYoutubeUrl(formData.youtubeLink) ? "!bg-green-50 dark:!bg-green-900/20 !border-green-300 dark:!border-green-700" : ""}`}
+                />
               </div>
-
-              {/* ── Series ── */}
-              <div className="flex flex-col gap-1">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Series</label>
-                <ComboBox name="series" value={formData.series} onChange={handleChange} options={uniqueSeries} placeholder="Search or type series…" className={inputCls} />
+              <div className="flex items-center gap-6 pt-4">
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="series" name="series" checked={!!formData.series} onChange={handleChange} className="w-4 h-4 accent-blue-600" />
+                  <label htmlFor="series" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">Is Series</label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" id="downloaded" name="downloaded" checked={!!formData.downloaded} onChange={handleChange} className="w-4 h-4 accent-blue-600" />
+                  <label htmlFor="downloaded" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">Downloaded</label>
+                </div>
               </div>
-
-              {/* ── YouTube Link ── */}
-              <div className="flex flex-col gap-1 sm:col-span-2">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wide">YouTube Link *</label>
-                <input type="url" name="youtubeLink" placeholder="https://youtube.com/watch?v=..." value={formData.youtubeLink} onChange={handleChange} required className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 rounded-lg text-sm text-gray-900 dark:text-white" />
-              </div>
-
-              {/* ── Downloaded ── */}
-              <div className="flex items-center gap-3 pt-4">
-                <input type="checkbox" id="downloaded" name="downloaded" checked={formData.downloaded} onChange={handleChange} className="w-4 h-4 accent-blue-600" />
-                <label htmlFor="downloaded" className="text-sm text-gray-700 dark:text-gray-300 cursor-pointer">Downloaded</label>
-              </div>
-
-              {/* ── Actions ── */}
               <div className="flex gap-3 sm:col-span-2 items-end">
                 <button type="submit" disabled={submitting} className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white py-2.5 px-4 rounded-lg text-sm font-medium transition-colors">
                   {submitting ? "Saving…" : editingId ? "Update Video" : "Add Video"}
@@ -429,50 +743,64 @@ export default function VideosPage() {
 
         {/* ── Filters ── */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-4 shadow-sm">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
-            {/* Search */}
-            <div className="relative sm:col-span-2 lg:col-span-1">
+          <div className="flex flex-col gap-3">
+            <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
-              <input type="text" placeholder="Search domain, topic, video…" value={search} onChange={(e) => setSearch(e.target.value)} className="w-full pl-9 pr-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400" />
-            </div>
-            {/* Domain filter — with search (ComboBox) */}
-            <div>
-              <ComboBox
-                name="filterDomain"
-                value={selectedDomain}
-                onChange={(e) => handleDomainFilterChange(e)}
-                options={uniqueDomains}
-                placeholder="All Domains"
-                className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2 pr-8 rounded-lg text-sm text-gray-900 dark:text-white w-full"
+              <input
+                type="text" placeholder="Search domain, topic, video…" value={search} onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-9 pr-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-800 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400"
               />
             </div>
-            {/* Topic filter — filtered by selected domain */}
-            <select value={selectedTopic} onChange={(e) => setSelectedTopic(e.target.value)} className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2 rounded-lg text-sm text-gray-900 dark:text-white">
-              <option value="">All Topics</option>
-              {filterTopicOptions.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-            {/* Series filter */}
-            <select value={selectedSeries} onChange={(e) => setSelectedSeries(e.target.value)} className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2 rounded-lg text-sm text-gray-900 dark:text-white">
-              <option value="">All Series</option>
-              {uniqueSeries.map((s) => <option key={s} value={s}>{s}</option>)}
-            </select>
-            {/* Download status */}
-            <select value={downloadFilter} onChange={(e) => setDownloadFilter(e.target.value)} className="border dark:border-gray-700 bg-white dark:bg-gray-800 p-2 rounded-lg text-sm text-gray-900 dark:text-white">
-              <option value="all">All Status</option>
-              <option value="downloaded">✅ Downloaded</option>
-              <option value="not-downloaded">❌ Not Downloaded</option>
-            </select>
+            {/* Domain Buttons — ordered by DOMAIN_ORDER */}
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => handleDomainFilterChange("")}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${!selectedDomain ? "bg-indigo-600 text-white border-indigo-600" : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+              >
+                All Domains
+              </button>
+              {uniqueDomains.map((d) => (
+                <button
+                  key={d}
+                  onClick={() => handleDomainFilterChange(selectedDomain === d ? "" : d)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${selectedDomain === d ? "bg-indigo-600 text-white border-indigo-600" : "bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="min-w-48">
+                <TopicFilterDropdown grouped={filterTopicGrouped} value={selectedTopic} onChange={setSelectedTopic} allDomains={uniqueDomains} />
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 select-none">
+                <input type="checkbox" checked={seriesFilter} onChange={(e) => { setSeriesFilter(e.target.checked); if (e.target.checked) setNotSeriesFilter(false); }} className="w-4 h-4 accent-indigo-600" />
+                Series
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 select-none">
+                <input type="checkbox" checked={notSeriesFilter} onChange={(e) => { setNotSeriesFilter(e.target.checked); if (e.target.checked) setSeriesFilter(false); }} className="w-4 h-4 accent-orange-500" />
+                Not Series
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 select-none">
+                <input type="checkbox" checked={downloadedFilter} onChange={(e) => { setDownloadedFilter(e.target.checked); if (e.target.checked) setNotDownloadedFilter(false); }} className="w-4 h-4 accent-green-600" />
+                Downloaded
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-700 dark:text-gray-300 select-none">
+                <input type="checkbox" checked={notDownloadedFilter} onChange={(e) => { setNotDownloadedFilter(e.target.checked); if (e.target.checked) setDownloadedFilter(false); }} className="w-4 h-4 accent-red-500" />
+                Not Downloaded
+              </label>
+            </div>
           </div>
-
-          {/* Active filter chips */}
-          {(search || selectedDomain || selectedTopic || selectedSeries || downloadFilter !== "all") && (
+          {hasActiveFilter && (
             <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t dark:border-gray-800">
               {search && <span className="inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 text-xs px-2 py-1 rounded-full">Search: {search}<button onClick={() => setSearch("")} className="ml-1 hover:text-red-500">✕</button></span>}
               {selectedDomain && <span className="inline-flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 text-xs px-2 py-1 rounded-full">Domain: {selectedDomain}<button onClick={() => { setSelectedDomain(""); setSelectedTopic(""); }} className="ml-1 hover:text-red-500">✕</button></span>}
               {selectedTopic && <span className="inline-flex items-center gap-1 bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 text-xs px-2 py-1 rounded-full">Topic: {selectedTopic}<button onClick={() => setSelectedTopic("")} className="ml-1 hover:text-red-500">✕</button></span>}
-              {selectedSeries && <span className="inline-flex items-center gap-1 bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300 text-xs px-2 py-1 rounded-full">Series: {selectedSeries}<button onClick={() => setSelectedSeries("")} className="ml-1 hover:text-red-500">✕</button></span>}
-              {downloadFilter !== "all" && <span className="inline-flex items-center gap-1 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">{downloadFilter === "downloaded" ? "Downloaded" : "Not Downloaded"}<button onClick={() => setDownloadFilter("all")} className="ml-1 hover:text-red-500">✕</button></span>}
-              <button onClick={() => { setSearch(""); setSelectedDomain(""); setSelectedTopic(""); setSelectedSeries(""); setDownloadFilter("all"); }} className="text-xs text-gray-500 hover:text-red-500 underline">Clear all</button>
+              {seriesFilter && <span className="inline-flex items-center gap-1 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 text-xs px-2 py-1 rounded-full">Series<button onClick={() => setSeriesFilter(false)} className="ml-1 hover:text-red-500">✕</button></span>}
+              {notSeriesFilter && <span className="inline-flex items-center gap-1 bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300 text-xs px-2 py-1 rounded-full">Not Series<button onClick={() => setNotSeriesFilter(false)} className="ml-1 hover:text-red-500">✕</button></span>}
+              {downloadedFilter && <span className="inline-flex items-center gap-1 bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 text-xs px-2 py-1 rounded-full">Downloaded<button onClick={() => setDownloadedFilter(false)} className="ml-1 hover:text-red-500">✕</button></span>}
+              {notDownloadedFilter && <span className="inline-flex items-center gap-1 bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 text-xs px-2 py-1 rounded-full">Not Downloaded<button onClick={() => setNotDownloadedFilter(false)} className="ml-1 hover:text-red-500">✕</button></span>}
+              <button onClick={() => { setSearch(""); setSelectedDomain(""); setSelectedTopic(""); setSeriesFilter(false); setNotSeriesFilter(false); setDownloadedFilter(false); setNotDownloadedFilter(false); }} className="text-xs text-gray-500 hover:text-red-500 underline">Clear all</button>
             </div>
           )}
           <p className="text-xs text-gray-400 mt-2">Showing {filteredSorted.length} of {totalVideos} videos</p>
@@ -489,27 +817,29 @@ export default function VideosPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full text-sm min-w-[1100px]">
                 <thead>
                   <tr className="bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-left">
                     <th className="px-4 py-3 font-semibold w-28">Thumbnail</th>
                     <th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("priority")}>Priority <SortIcon field="priority" sortConfig={sortConfig} /></th>
                     <th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("domain")}>Domain <SortIcon field="domain" sortConfig={sortConfig} /></th>
                     <th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("topic")}>Topic <SortIcon field="topic" sortConfig={sortConfig} /></th>
-                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("videoName")}>Video Name <SortIcon field="videoName" sortConfig={sortConfig} /></th>
+                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap w-80" onClick={() => handleSort("videoName")}>Video Name <SortIcon field="videoName" sortConfig={sortConfig} /></th>
                     <th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("channelName")}>Channel <SortIcon field="channelName" sortConfig={sortConfig} /></th>
-                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none whitespace-nowrap" onClick={() => handleSort("series")}>Series <SortIcon field="series" sortConfig={sortConfig} /></th>
-                    <th className="px-4 py-3 font-semibold text-center whitespace-nowrap">Downloaded</th>
+                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none text-center whitespace-nowrap" onClick={() => handleSort("series")}>Series <SortIcon field="series" sortConfig={sortConfig} /></th>
+                    <th className="px-4 py-3 font-semibold cursor-pointer hover:text-blue-600 select-none text-center whitespace-nowrap" onClick={() => handleSort("downloaded")}>Downloaded <SortIcon field="downloaded" sortConfig={sortConfig} /></th>
                     <th className="px-4 py-3 font-semibold text-right whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {paginatedVideos.map((item) => {
-                    const ytId      = getYtId(item.youtubeLink);
+                    const ytId = getYtId(item.youtubeLink);
                     const thumbnail = ytId ? `https://img.youtube.com/vi/${ytId}/mqdefault.jpg` : null;
-                    const domain    = topicDomainMap[item.topic] || "—";
-                    // Show live priority from priorities map if available
-                    const livePriority = topicPriorityMap[item.topic] ?? item.priority;
+                    const domain = item.domain || "—";
+                    const key = `${item.domain}::${item.topic}`;
+                    const livePriority = topicPriorityMap[key] ?? item.priority;
+                    const isSeries = parseBool(item.series);
+                    const isDownloaded = parseBool(item.downloaded);
                     return (
                       <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
                         <td className="px-4 py-3">
@@ -525,19 +855,26 @@ export default function VideosPage() {
                         <td className="px-4 py-3">
                           {domain !== "—" ? (
                             <span className="inline-block bg-indigo-100 dark:bg-indigo-900/40 text-indigo-800 dark:text-indigo-300 text-xs font-medium px-2 py-0.5 rounded">{domain}</span>
-                          ) : <span className="text-gray-400 text-xs">—</span>}
+                          ) : (
+                            <span className="text-gray-400 text-xs">—</span>
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <span className="inline-block bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-300 text-xs px-2 py-0.5 rounded">{item.topic}</span>
                         </td>
-                        <td className="px-4 py-3 max-w-xs">
-                          <a href={item.youtubeLink} target="_blank" rel="noopener noreferrer" className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 font-medium line-clamp-2" title={item.videoName}>{item.videoName}</a>
+                        <td className="px-4 py-3 w-80">
+                          <a href={item.youtubeLink} target="_blank" rel="noopener noreferrer" className="text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 font-medium line-clamp-2" title={item.videoName}>
+                            {item.videoName}
+                          </a>
                         </td>
                         <td className="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs whitespace-nowrap">{item.channelName || "—"}</td>
-                        <td className="px-4 py-3 text-gray-600 dark:text-gray-400 text-xs">{item.series || "—"}</td>
+                        <td className="px-4 py-3 text-center text-xs">{isSeries ? "✅" : "—"}</td>
                         <td className="px-4 py-3 text-center">
-                          <button onClick={() => toggleDownloaded(item)} className={`text-xs px-2 py-1 rounded font-medium transition-colors ${item.downloaded ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 hover:bg-green-200" : "bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200"}`}>
-                            {item.downloaded ? "✅" : "⬜"}
+                          <button
+                            onClick={() => toggleDownloaded(item)}
+                            className={`text-xs px-2 py-1 rounded font-medium transition-colors ${isDownloaded ? "bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 hover:bg-green-200" : "bg-gray-100 dark:bg-gray-700 text-gray-500 hover:bg-gray-200"}`}
+                          >
+                            {isDownloaded ? "✅" : "⬜"}
                           </button>
                         </td>
                         <td className="px-4 py-3">
