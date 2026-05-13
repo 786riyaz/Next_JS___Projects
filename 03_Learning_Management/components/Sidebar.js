@@ -2,15 +2,14 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import DarkModeButton from "./DarkModeButton";
-
 export default function Sidebar() {
   const pathname = usePathname();
   const navItems = [
-    { name: "Domain Priorities", path: "/priorities"  },
-    { name: "YouTube Videos",     path: "/videos"     },
-    { name: "Other Learning Links",      path: "/links"       },
-    { name: "Notes",      path: "/notes"       },
+    { name: "Domain Priorities",    path: "/priorities" },
+    { name: "YouTube Videos",       path: "/videos"     },
+    { name: "Other Learning Links", path: "/links"      },
+    { name: "Notes",                path: "/notes"      },
+    { name: "⚙️ Settings",         path: "/settings"   },
   ];
   return (
     <aside className="w-64 min-h-screen bg-black text-white p-5 border-r border-gray-800 flex flex-col">
@@ -28,9 +27,6 @@ export default function Sidebar() {
           </Link>
         ))}
       </nav>
-      <div className="mt-4">
-        <DarkModeButton />
-      </div>
     </aside>
   );
 }
