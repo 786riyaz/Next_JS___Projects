@@ -1,4 +1,5 @@
 import "./globals.css";
+import type { ReactNode } from "react";
 import Sidebar from "@/components/Sidebar";
 
 export const metadata = {
@@ -6,7 +7,7 @@ export const metadata = {
   description: "Learning Videos Manager",
 };
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className="dark">
       <body className="bg-gray-950 text-white">
