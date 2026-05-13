@@ -7,6 +7,8 @@ And this feature should also work properly with domain filterd applied condition
 
 and on links page i want sorting options on category, topics and subtopics columns.
 
+also add excel import export feature for excel on link and notes page.
+
 all the other things are working just fine so dont touch any thing. do not break any existing feature, functionality and any other UI.
 
 and let me know if you need any thing from my side.

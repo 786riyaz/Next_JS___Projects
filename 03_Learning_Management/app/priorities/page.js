@@ -6,11 +6,9 @@ import { saveAs } from "file-saver";
 import ComboBox from "@/components/ComboBox";
 import moduleOrder from "../moduleOrder.js";
 import { DOMAIN_COLORS, buildDomainColorMap } from "@/lib/domainColors";
-
 const DOMAIN_ORDER = moduleOrder.DOMAIN_ORDER;
 const norm = (s) => s.toLowerCase().replace(/[\s/]/g, "");
 const DOMAIN_ORDER_NORM = DOMAIN_ORDER.map(norm);
-
 function domainIndex(d) {
   const n = norm(d);
   const i = DOMAIN_ORDER_NORM.indexOf(n);
@@ -35,9 +33,7 @@ function getPaginationRange(current, total) {
   if (end > total) { end = total; start = Math.max(1, end - maxVisible + 1); }
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 }
-
 const inputCls = "border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 pr-8 rounded-lg text-sm text-gray-900 dark:text-white w-full";
-
 export default function PrioritiesPage() {
   const [priorities, setPriorities] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -52,12 +48,10 @@ export default function PrioritiesPage() {
   const [sortConfig, setSortConfig] = useState({ field: "learnPriority", dir: "asc" });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
-
   const showToast = useCallback((msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 4000);
   }, []);
-
   async function fetchPriorities() {
     setLoading(true);
     try {
@@ -66,21 +60,16 @@ export default function PrioritiesPage() {
     } catch { showToast("Failed to load priorities", "error"); }
     finally { setLoading(false); }
   }
-
   useEffect(() => { fetchPriorities(); /* eslint-disable-next-line */ }, []);
-
   const uniqueDomains = useMemo(() =>
     sortDomains([...new Set(priorities.map((p) => p.domain).filter(Boolean))]),
     [priorities]
   );
-
   const domainColorMap = useMemo(() => buildDomainColorMap(uniqueDomains), [uniqueDomains]);
-
   const uniqueTopicsForDomain = useMemo(() => {
     const source = formData.domain ? priorities.filter((p) => p.domain === formData.domain) : priorities;
     return [...new Set(source.map((p) => p.topic).filter(Boolean))].sort();
   }, [priorities, formData.domain]);
-
   function isDuplicateDomainTopic(domain, topic, excludeId = null) {
     return priorities.some(
       (p) => p.domain.trim().toLowerCase() === domain.trim().toLowerCase()
@@ -91,7 +80,6 @@ export default function PrioritiesPage() {
   function isDuplicateLearnPriority(learnPriority, excludeId = null) {
     return priorities.some((p) => Number(p.learnPriority) === Number(learnPriority) && p._id !== excludeId);
   }
-
   function handleChange(e) {
     const { name, value } = e.target;
     if (name === "domain") {
@@ -113,7 +101,6 @@ export default function PrioritiesPage() {
     }
     setFormData((prev) => ({ ...prev, [name]: value }));
   }
-
   async function handleSubmit(e) {
     e.preventDefault();
     setSubmitting(true);
@@ -135,14 +122,12 @@ export default function PrioritiesPage() {
     } catch { showToast("Network error", "error"); }
     finally { setSubmitting(false); }
   }
-
   function handleEdit(item) {
     setEditingId(item._id);
     setFormData({ domain: item.domain, topic: item.topic, moduleOrder: item.moduleOrder, learnPriority: item.learnPriority });
     setFormOpen(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
   async function handleDelete(id) {
     if (!window.confirm("Delete this priority?")) return;
     try {
@@ -150,30 +135,24 @@ export default function PrioritiesPage() {
       if (res.ok) { showToast("Priority deleted"); fetchPriorities(); }
     } catch { showToast("Delete failed", "error"); }
   }
-
   function resetForm() { setEditingId(null); setFormData(emptyForm); setFormOpen(false); }
-
   function handleSort(field) {
     setSortConfig((prev) => prev.field === field ? { field, dir: prev.dir === "asc" ? "desc" : "asc" } : { field, dir: "asc" });
     setCurrentPage(1);
   }
-
   // ── Up/Down reorder: swap learnPriority values between two rows ──────────
   async function handleReorder(item, direction) {
-    const list = filteredSorted; // current sorted view
+    const list = filteredSorted;
     const idx = list.findIndex((p) => p._id === item._id);
     const swapIdx = direction === "up" ? idx - 1 : idx + 1;
     if (swapIdx < 0 || swapIdx >= list.length) return;
-
     const other = list[swapIdx];
-    // Swap learnPriority values
     const [newA, newB] = [other.learnPriority, item.learnPriority];
     try {
       await Promise.all([
         fetch(`/api/priorities/${item._id}`,  { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...item,  learnPriority: newA }) }),
         fetch(`/api/priorities/${other._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...other, learnPriority: newB }) }),
       ]);
-      // Optimistic update in local state
       setPriorities((prev) => prev.map((p) => {
         if (p._id === item._id)  return { ...p, learnPriority: newA };
         if (p._id === other._id) return { ...p, learnPriority: newB };
@@ -181,7 +160,6 @@ export default function PrioritiesPage() {
       }));
     } catch { showToast("Reorder failed", "error"); }
   }
-
   const filteredSorted = useMemo(() => {
     let list = priorities.filter((item) => {
       const q = search.toLowerCase();
@@ -199,16 +177,15 @@ export default function PrioritiesPage() {
     });
     return list;
   }, [priorities, search, selectedDomain, sortConfig]);
-
   const totalPages = Math.max(1, Math.ceil(filteredSorted.length / itemsPerPage));
   const safePage = Math.min(currentPage, totalPages);
   const paginated = filteredSorted.slice((safePage - 1) * itemsPerPage, safePage * itemsPerPage);
   const pageNumbers = getPaginationRange(safePage, totalPages);
   useEffect(() => { setCurrentPage(1); }, [search, selectedDomain, sortConfig]);
-
   const domainCount = uniqueDomains.length;
   const topicCount = priorities.length;
-
+  // Reorder mode: sorted by learnPriority asc + no text search (domain filter is OK)
+  const isReorderMode = sortConfig.field === "learnPriority" && sortConfig.dir === "asc" && !search;
   async function handleExcelImport(event) {
     const file = event.target.files[0]; if (!file) return;
     const reader = new FileReader();
@@ -240,21 +217,15 @@ export default function PrioritiesPage() {
     };
     reader.readAsBinaryString(file); event.target.value = "";
   }
-
   function exportToExcel() {
     const data = filteredSorted.map((item) => ({ Domain: item.domain, Topic: item.topic, "Module Order": item.moduleOrder, "Learn Priority": item.learnPriority }));
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Priorities");
     saveAs(new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: "application/octet-stream" }), "priorities.xlsx");
   }
-
   const topicHasSavedData = formData.topic && formData.domain && !editingId &&
     priorities.find((p) => p.domain.trim().toLowerCase() === formData.domain.trim().toLowerCase()
       && p.topic.trim().toLowerCase() === formData.topic.trim().toLowerCase());
-
-  // Up/down only works when sorted by learnPriority asc (natural order)
-  const isReorderMode = sortConfig.field === "learnPriority" && sortConfig.dir === "asc" && !search && !selectedDomain;
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {toast && (
@@ -281,7 +252,6 @@ export default function PrioritiesPage() {
             </button>
           </div>
         </div>
-
         {/* Form */}
         {formOpen && (
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 shadow-sm">
@@ -319,7 +289,6 @@ export default function PrioritiesPage() {
             </form>
           </div>
         )}
-
         {/* Filters */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-4 shadow-sm">
           <div className="flex flex-col gap-3">
@@ -355,11 +324,13 @@ export default function PrioritiesPage() {
           <div className="flex items-center justify-between mt-2">
             <p className="text-xs text-gray-400">Showing {filteredSorted.length} of {topicCount} priorities</p>
             {!isReorderMode && (
-              <p className="text-xs text-amber-500">⚠ Clear filters &amp; sort by Learn Priority ↑ to enable reorder buttons</p>
+              <p className="text-xs text-amber-500">⚠ Sort by Learn Priority ↑ to enable reorder buttons</p>
+            )}
+            {isReorderMode && selectedDomain && (
+              <p className="text-xs text-green-500">✓ Reorder active (filtered to: {selectedDomain})</p>
             )}
           </div>
         </div>
-
         {/* Table */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm overflow-hidden">
           {loading ? (
@@ -404,7 +375,6 @@ export default function PrioritiesPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex gap-1.5 justify-end items-center">
-                            {/* Up/Down reorder — only shown in natural sort mode */}
                             {isReorderMode && (
                               <>
                                 <button
@@ -433,7 +403,6 @@ export default function PrioritiesPage() {
             </div>
           )}
         </div>
-
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between mt-4 flex-wrap gap-2">

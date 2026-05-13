@@ -1,7 +1,8 @@
 // app/notes/page.js
 "use client";
 import { useEffect, useMemo, useState, useCallback } from "react";
-
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 const CATEGORY_COLORS = [
   { bg: "bg-indigo-100 dark:bg-indigo-900/50",  text: "text-indigo-700 dark:text-indigo-300",  dot: "bg-indigo-500",  card: "border-indigo-300 dark:border-indigo-700"  },
   { bg: "bg-emerald-100 dark:bg-emerald-900/50", text: "text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500", card: "border-emerald-300 dark:border-emerald-700" },
@@ -13,7 +14,6 @@ const CATEGORY_COLORS = [
   { bg: "bg-teal-100 dark:bg-teal-900/50",       text: "text-teal-700 dark:text-teal-300",       dot: "bg-teal-500",    card: "border-teal-300 dark:border-teal-700"      },
 ];
 const inputCls = "border dark:border-gray-700 bg-white dark:bg-gray-800 p-2.5 rounded-lg text-sm text-gray-900 dark:text-white w-full outline-none";
-
 export default function NotesPage() {
   const [notes, setNotes] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,12 +25,10 @@ export default function NotesPage() {
   const [selectedCategory, setSelectedCategory] = useState("");
   const emptyForm = { title: "", content: "", category: "General", pinned: false };
   const [formData, setFormData] = useState(emptyForm);
-
   const showToast = useCallback((msg, type = "success") => {
     setToast({ msg, type });
     setTimeout(() => setToast(null), 4000);
   }, []);
-
   async function fetchNotes() {
     setLoading(true);
     try { const res = await fetch("/api/notes"); setNotes(await res.json()); }
@@ -38,14 +36,12 @@ export default function NotesPage() {
     finally { setLoading(false); }
   }
   useEffect(() => { fetchNotes(); /* eslint-disable-next-line */ }, []);
-
   const uniqueCategories = useMemo(() => [...new Set(notes.map((n) => n.category).filter(Boolean))].sort(), [notes]);
   const categoryColorMap = useMemo(() => {
     const map = {};
     uniqueCategories.forEach((c, i) => { map[c] = CATEGORY_COLORS[i % CATEGORY_COLORS.length]; });
     return map;
   }, [uniqueCategories]);
-
   const filtered = useMemo(() => {
     return notes.filter((n) => {
       const q = search.toLowerCase();
@@ -54,7 +50,6 @@ export default function NotesPage() {
       return matchSearch && matchCat;
     });
   }, [notes, search, selectedCategory]);
-
   async function handleSubmit(e) {
     e.preventDefault();
     if (!formData.title) { showToast("Title is required", "error"); return; }
@@ -68,32 +63,67 @@ export default function NotesPage() {
     } catch { showToast("Network error", "error"); }
     finally { setSubmitting(false); }
   }
-
   function handleEdit(note) {
     setEditingId(note._id);
     setFormData({ title: note.title, content: note.content || "", category: note.category || "General", pinned: note.pinned || false });
     setFormOpen(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
   async function handleDelete(id) {
     if (!window.confirm("Delete this note?")) return;
     try { const res = await fetch(`/api/notes/${id}`, { method: "DELETE" }); if (res.ok) { showToast("Note deleted"); fetchNotes(); } }
     catch { showToast("Delete failed", "error"); }
   }
-
   async function togglePin(note) {
     try {
       await fetch(`/api/notes/${note._id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...note, pinned: !note.pinned }) });
       fetchNotes();
     } catch { showToast("Update failed", "error"); }
   }
-
   function resetForm() { setEditingId(null); setFormData(emptyForm); setFormOpen(false); }
-
+  // ── Excel Import ────────────────────────────────────────────────────────
+  async function handleExcelImport(event) {
+    const file = event.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const workbook = XLSX.read(e.target.result, { type: "binary" });
+      const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+      const formatted = json.map((item) => ({
+        title:    String(item.Title    || "").trim(),
+        content:  String(item.Content  || "").trim(),
+        category: String(item.Category || "General").trim() || "General",
+        pinned:   String(item.Pinned   || "").trim().toLowerCase() === "yes" || String(item.Pinned || "").trim().toLowerCase() === "true",
+      })).filter((item) => item.title);
+      const existingTitles = new Set(notes.map((n) => n.title.trim().toLowerCase()));
+      const skipped = [], toInsert = [];
+      for (const item of formatted) {
+        const key = item.title.toLowerCase();
+        if (existingTitles.has(key)) skipped.push(item.title + " (duplicate title)");
+        else { toInsert.push(item); existingTitles.add(key); }
+      }
+      if (!toInsert.length) { showToast(`⚠️ All ${formatted.length} rows skipped — duplicates found.`, "error"); return; }
+      try {
+        for (const item of toInsert) await fetch("/api/notes", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(item) });
+        showToast(skipped.length ? `Imported ${toInsert.length} notes. Skipped ${skipped.length} duplicate(s).` : `Imported ${toInsert.length} notes successfully.`);
+        fetchNotes();
+      } catch { showToast("Import failed", "error"); }
+    };
+    reader.readAsBinaryString(file); event.target.value = "";
+  }
+  // ── Excel Export ────────────────────────────────────────────────────────
+  function exportToExcel() {
+    const data = filtered.map((note) => ({
+      Title:    note.title,
+      Content:  note.content || "",
+      Category: note.category || "General",
+      Pinned:   note.pinned ? "Yes" : "No",
+    }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(data), "Notes");
+    saveAs(new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: "application/octet-stream" }), "notes.xlsx");
+  }
   const pinnedNotes = filtered.filter((n) => n.pinned);
   const unpinnedNotes = filtered.filter((n) => !n.pinned);
-
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
       {toast && (
@@ -108,11 +138,18 @@ export default function NotesPage() {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">📝 Notes</h1>
             <p className="text-sm text-gray-500 mt-1">{notes.length} notes across {uniqueCategories.length} categories</p>
           </div>
-          <button onClick={() => { setFormOpen((o) => !o); if (formOpen) resetForm(); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-            {formOpen ? "✕ Close Form" : "+ Add Note"}
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => { setFormOpen((o) => !o); if (formOpen) resetForm(); }} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+              {formOpen ? "✕ Close Form" : "+ Add Note"}
+            </button>
+            <label className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium cursor-pointer transition-colors">
+              ↑ Import Excel<input type="file" accept=".xlsx,.xls" hidden onChange={handleExcelImport} />
+            </label>
+            <button onClick={exportToExcel} className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+              ↓ Export ({filtered.length})
+            </button>
+          </div>
         </div>
-
         {/* Form */}
         {formOpen && (
           <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 mb-6 shadow-sm">
@@ -150,7 +187,6 @@ export default function NotesPage() {
             </form>
           </div>
         )}
-
         {/* Filters */}
         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-4 mb-6 shadow-sm">
           <div className="flex flex-col gap-3">
@@ -178,7 +214,6 @@ export default function NotesPage() {
           </div>
           <p className="text-xs text-gray-400 mt-2">Showing {filtered.length} of {notes.length} notes</p>
         </div>
-
         {/* Notes Grid */}
         {loading ? (
           <div className="flex items-center justify-center py-20 text-gray-400"><span className="animate-spin mr-2">⟳</span> Loading notes…</div>
@@ -210,7 +245,6 @@ export default function NotesPage() {
     </div>
   );
 }
-
 function NoteCards({ notes, categoryColorMap, onEdit, onDelete, onPin }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
