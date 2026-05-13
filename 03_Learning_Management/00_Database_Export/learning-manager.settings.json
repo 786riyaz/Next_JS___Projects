@@ -1,0 +1,54 @@
+[{
+  "_id": {
+    "$oid": "6a040ad5788b4568f80d94f0"
+  },
+  "key": "domainOrder",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-05-13T05:23:33.070Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-13T05:25:37.886Z"
+  },
+  "value": [
+    "General",
+    "Web Dev",
+    "Deployment",
+    "AI/LLM",
+    "System Design",
+    "Other Programming",
+    "Personal",
+    "Hobbies",
+    "Other"
+  ]
+},
+{
+  "_id": {
+    "$oid": "6a040ad5788b4568f80d94f1"
+  },
+  "key": "defaultDomain",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-05-13T05:23:33.086Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-13T05:25:37.903Z"
+  },
+  "value": "Web Dev"
+},
+{
+  "_id": {
+    "$oid": "6a040ad5788b4568f80d94f2"
+  },
+  "key": "domainColorOverrides",
+  "__v": 0,
+  "createdAt": {
+    "$date": "2026-05-13T05:23:33.100Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-13T05:25:37.919Z"
+  },
+  "value": {
+    "General": 0
+  }
+}]

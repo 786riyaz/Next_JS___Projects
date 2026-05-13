@@ -1,0 +1,324 @@
+[{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccef"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Scalability,Load Balancing,Distributing traffic across servers",
+  "reference": "https://lnkd.in/ewTeu-58"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccf0"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Networking,Proxy vs Reverse Proxy,Client-side vs server-side proxying",
+  "reference": "https://lnkd.in/enEy9QYD"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccf1"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Distributed Systems,CAP Theorem,Consistency vs Availability vs Partition Tolerance",
+  "reference": "https://lnkd.in/eePkq2kJ"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccf2"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Database Scaling,Sharding,Horizontal partitioning of data",
+  "reference": "https://lnkd.in/e8Gyr4G2"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccf3"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Reliability,Availability,System uptime and fault tolerance",
+  "reference": "https://lnkd.in/eEQ5MAnC"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccf4"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "System Design,Services,Microservices vs Monolith",
+  "reference": "https://lnkd.in/exyDGmSe"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccf5"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Database,Databases in System Design,Choosing DB types and usage",
+  "reference": "https://lnkd.in/eifbKsr6"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccf6"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Database,Data Sharding & Partitioning,Splitting large datasets",
+  "reference": "https://lnkd.in/eVhzCnW5"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccf7"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Distributed Systems,Algorithms,Consensus & coordination algorithms",
+  "reference": "https://lnkd.in/eXiJ9_GV"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccf8"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Distributed Systems,Consistent Hashing,Load distribution technique",
+  "reference": "https://lnkd.in/eYgXNHz4"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccf9"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Data Engineering,CDC (Change Data Capture),Tracking data changes",
+  "reference": "https://lnkd.in/efeP3fXP"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccfa"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Caching,Caching Advanced,Advanced caching concepts",
+  "reference": "https://lnkd.in/eqDfvdvB"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccfb"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Caching,Caching Strategies,Write-through, write-back, cache-aside",
+  "reference": "https://lnkd.in/eqFTdS_v"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccfc"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Caching,Cache Eviction Policies,LRU, LFU, FIFO",
+  "reference": "https://lnkd.in/ewB5MZ7z"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccfd"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Performance,CDN,Content delivery optimization",
+  "reference": "https://lnkd.in/eCSccEkz"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccfe"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Security,Rate Limiting,Throttling API requests",
+  "reference": "https://lnkd.in/etby2w5C"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4ceccff"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Distributed Systems,Message Queues,Async communication (Kafka, RabbitMQ)",
+  "reference": "https://lnkd.in/eKQWVxqw"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd00"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Data Structures,Bloom Filters,Probabilistic data structures",
+  "reference": "https://lnkd.in/eq6hN3Nn"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd01"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Concurrency,Concurrency vs Parallelism,Execution models",
+  "reference": "https://lnkd.in/eRpCq8KQ"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd02"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Realtime Systems,Long Polling vs WebSockets,Realtime communication methods",
+  "reference": "https://lnkd.in/eYZnk-93"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd03"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Architecture,Stateful vs Stateless,System design patterns",
+  "reference": "https://lnkd.in/egXhAmY4"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd04"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Data Processing,Batch vs Stream Processing,Offline vs real-time processing",
+  "reference": "https://lnkd.in/ez5v_suJ"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd05"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Sharding",
+  "reference": "https://lnkd.in/e8Gyr4G2 (From 0:30 to 1:23:40)"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd06"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Caching",
+  "reference": "https://lnkd.in/e8Gyr4G2 (Go to 1:39:08 )"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd07"
+  },
+  "category": "System Design",
+  "topic": "System Design",
+  "subtopic": "Scaling",
+  "reference": "https://lnkd.in/e8Gyr4G2 ( Go to 2:25:15 )"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd08"
+  },
+  "category": "WebDev",
+  "topic": "Backend",
+  "subtopic": "API Design,APIs,Basics of API design and usage",
+  "reference": "https://lnkd.in/ezwnCGqS"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd09"
+  },
+  "category": "WebDev",
+  "topic": "Backend",
+  "subtopic": "API Design,API Gateways,Routing, authentication, aggregation",
+  "reference": "https://lnkd.in/eqNrc77q"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd0a"
+  },
+  "category": "WebDev",
+  "topic": "Backend",
+  "subtopic": "Security,JWT,Authentication using tokens",
+  "reference": "https://lnkd.in/eAnfnzm7"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd0b"
+  },
+  "category": "WebDev",
+  "topic": "Backend",
+  "subtopic": "API Communication,Webhooks,Event-driven HTTP callbacks",
+  "reference": "https://lnkd.in/eF6gPzVJ"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd0c"
+  },
+  "category": "WebDev",
+  "topic": "Backend",
+  "subtopic": "API Architecture,API Paradigms,tRPC vs gRPC vs GraphQL vs REST",
+  "reference": "https://lnkd.in/eydTuVj3"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd0d"
+  },
+  "category": "WebDev",
+  "topic": "Backend",
+  "subtopic": "Concurrency,Sync vs Async,Synchronous vs asynchronous processing",
+  "reference": "https://lnkd.in/ekrADFHy"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd0e"
+  },
+  "category": "WebDev",
+  "topic": "Backend",
+  "subtopic": "API Design,REST,RESTful principles",
+  "reference": "https://lnkd.in/eY2ACHFC"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd0f"
+  },
+  "category": "WebDev",
+  "topic": "SQL",
+  "subtopic": "Database,SQL vs NoSQL,Relational vs non-relational DBs",
+  "reference": "https://lnkd.in/entah3zc"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd10"
+  },
+  "category": "WebDev",
+  "topic": "SQL",
+  "subtopic": "Database,ACID Transactions,Reliability guarantees in DBs",
+  "reference": "https://lnkd.in/etXk_wa4"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd11"
+  },
+  "category": "WebDev",
+  "topic": "Backend",
+  "subtopic": "API Design,Idempotency,Safe retries in APIs",
+  "reference": "https://lnkd.in/e-sB7a3w"
+},
+{
+  "_id": {
+    "$oid": "6a030cd9eefea0efd4cecd12"
+  },
+  "category": "WebDev",
+  "topic": "Backend",
+  "subtopic": "tRPC, gRPC, GraphQL, or REST",
+  "reference": "when to use what?"
+}]
