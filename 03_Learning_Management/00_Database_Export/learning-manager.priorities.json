@@ -5,12 +5,12 @@
   "domain": "General",
   "topic": "Communication Skill",
   "moduleOrder": 101,
-  "learnPriority": 102,
+  "learnPriority": 101,
   "createdAt": {
     "$date": "2026-05-11T11:06:17.975Z"
   },
   "updatedAt": {
-    "$date": "2026-05-13T05:02:29.924Z"
+    "$date": "2026-05-13T09:01:06.427Z"
   },
   "__v": 0
 },
@@ -21,12 +21,12 @@
   "domain": "General",
   "topic": "English",
   "moduleOrder": 102,
-  "learnPriority": 101,
+  "learnPriority": 102,
   "createdAt": {
     "$date": "2026-05-11T11:06:18.018Z"
   },
   "updatedAt": {
-    "$date": "2026-05-13T05:02:29.941Z"
+    "$date": "2026-05-13T09:00:59.219Z"
   },
   "__v": 0
 },
@@ -90,7 +90,7 @@
     "$date": "2026-05-11T11:06:18.153Z"
   },
   "updatedAt": {
-    "$date": "2026-05-13T05:20:22.856Z"
+    "$date": "2026-05-13T09:01:22.174Z"
   },
   "__v": 0
 },
@@ -106,7 +106,7 @@
     "$date": "2026-05-11T11:06:18.183Z"
   },
   "updatedAt": {
-    "$date": "2026-05-13T05:20:22.849Z"
+    "$date": "2026-05-13T09:01:22.154Z"
   },
   "__v": 0
 },
@@ -1403,6 +1403,118 @@
   },
   "updatedAt": {
     "$date": "2026-05-11T11:06:20.703Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a043eac3fbb0991e61837c6"
+  },
+  "domain": "System Design",
+  "topic": "Load Balancer",
+  "moduleOrder": 503,
+  "learnPriority": 503,
+  "createdAt": {
+    "$date": "2026-05-13T09:04:44.063Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-13T09:06:40.346Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0441783fbb0991e61837cf"
+  },
+  "domain": "AI/LLM",
+  "topic": "AI Tools",
+  "moduleOrder": 413,
+  "learnPriority": 413,
+  "createdAt": {
+    "$date": "2026-05-13T09:16:40.532Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-13T09:18:26.708Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a04423d3fbb0991e61837d1"
+  },
+  "domain": "Deployment",
+  "topic": "Azure",
+  "moduleOrder": 316,
+  "learnPriority": 316,
+  "createdAt": {
+    "$date": "2026-05-13T09:19:57.839Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-13T09:21:44.372Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a04443a3fbb0991e61837d6"
+  },
+  "domain": "AI/LLM",
+  "topic": "n8n",
+  "moduleOrder": 414,
+  "learnPriority": 414,
+  "createdAt": {
+    "$date": "2026-05-13T09:28:26.783Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-13T09:28:56.317Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a044d3ccaea8d9004a23401"
+  },
+  "domain": "System Design",
+  "topic": "Rate Limiting",
+  "moduleOrder": 505,
+  "learnPriority": 505,
+  "createdAt": {
+    "$date": "2026-05-13T10:06:52.120Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-13T10:06:52.120Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a044d65caea8d9004a23403"
+  },
+  "domain": "System Design",
+  "topic": "DNS",
+  "moduleOrder": 504,
+  "learnPriority": 504,
+  "createdAt": {
+    "$date": "2026-05-13T10:07:33.026Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-13T10:07:33.026Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a044ddacaea8d9004a23405"
+  },
+  "domain": "System Design",
+  "topic": "Batch Processing",
+  "moduleOrder": 506,
+  "learnPriority": 506,
+  "createdAt": {
+    "$date": "2026-05-13T10:09:30.876Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-13T10:09:30.876Z"
   },
   "__v": 0
 }]
