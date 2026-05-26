@@ -321,4 +321,20 @@
   "topic": "Backend",
   "subtopic": "tRPC, gRPC, GraphQL, or REST",
   "reference": "when to use what?"
+},
+{
+  "_id": {
+    "$oid": "6a0abdc49af8072b7a96e3f9"
+  },
+  "category": "WebDev",
+  "topic": "DSA",
+  "subtopic": "Sharpener DSA Topics ",
+  "reference": "https://docs.google.com/spreadsheets/d/1OBl8_DEUH8-hJaMRlU0Gqee_XbsgX5CIFyPJyEgGEG0/edit?gid=0#gid=0",
+  "createdAt": {
+    "$date": "2026-05-18T07:20:36.497Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T07:20:58.514Z"
+  },
+  "__v": 0
 }]

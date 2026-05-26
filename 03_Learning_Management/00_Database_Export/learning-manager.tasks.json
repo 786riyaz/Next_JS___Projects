@@ -1,0 +1,72 @@
+[{
+  "_id": {
+    "$oid": "6a15a4abc501539177042c17"
+  },
+  "title": "Revision File for All the Technologies",
+  "description": "Create Revision File for All the Technologies and push the revision file in the git for interview revision.",
+  "category": "General",
+  "priority": "Low",
+  "status": "Todo",
+  "estimatedDate": null,
+  "createdAt": {
+    "$date": "2026-05-26T13:48:27.508Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-26T13:48:47.133Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a15a4e5c501539177042c18"
+  },
+  "title": "Understand all Projects",
+  "description": "Understand all the code of all the created projects.",
+  "category": "General",
+  "priority": "Medium",
+  "status": "Todo",
+  "estimatedDate": null,
+  "createdAt": {
+    "$date": "2026-05-26T13:49:25.447Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-26T13:49:25.447Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a15a578c501539177042c19"
+  },
+  "title": "Standalone Git Repo",
+  "description": "Create Separate Different GitHub Repos for Different projects.",
+  "category": "General",
+  "priority": "Medium",
+  "status": "Todo",
+  "estimatedDate": null,
+  "createdAt": {
+    "$date": "2026-05-26T13:51:52.115Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-26T13:51:52.115Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a15a5d6c501539177042c1a"
+  },
+  "title": "Improve Learning Management",
+  "description": "Implement Import and Export feature on Tasks Page.",
+  "category": "Learning Management",
+  "priority": "Medium",
+  "status": "Todo",
+  "estimatedDate": null,
+  "createdAt": {
+    "$date": "2026-05-26T13:53:26.619Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-26T13:53:26.619Z"
+  },
+  "__v": 0
+}]

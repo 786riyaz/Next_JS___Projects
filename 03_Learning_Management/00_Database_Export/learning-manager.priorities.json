@@ -1517,4 +1517,116 @@
     "$date": "2026-05-13T10:09:30.876Z"
   },
   "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a06cfbadb5d29ecf782f6ef"
+  },
+  "domain": "System Design",
+  "topic": "Event Driven System",
+  "moduleOrder": 510,
+  "learnPriority": 510,
+  "createdAt": {
+    "$date": "2026-05-15T07:48:10.493Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-15T07:48:37.400Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a08487b78c37d143887a466"
+  },
+  "domain": "Deployment",
+  "topic": "GitHub Actions",
+  "moduleOrder": 317,
+  "learnPriority": 317,
+  "createdAt": {
+    "$date": "2026-05-16T10:35:39.750Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:36:01.559Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a099be4a95fce8447f3782e"
+  },
+  "domain": "Other",
+  "topic": "Gaming",
+  "moduleOrder": 905,
+  "learnPriority": 905,
+  "createdAt": {
+    "$date": "2026-05-17T10:43:48.982Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:44:04.328Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0af4f09af8072b7a96e409"
+  },
+  "domain": "Personal",
+  "topic": "Job",
+  "moduleOrder": 710,
+  "learnPriority": 710,
+  "createdAt": {
+    "$date": "2026-05-18T11:16:00.788Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T11:16:24.295Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a115f2c82c9b774a252e764"
+  },
+  "domain": "AI/LLM",
+  "topic": "Hugging Face",
+  "moduleOrder": 415,
+  "learnPriority": 415,
+  "createdAt": {
+    "$date": "2026-05-23T08:02:52.381Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T08:09:34.894Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13e5d7b06d52720973c3df"
+  },
+  "domain": "AI/LLM",
+  "topic": "OpenClaw",
+  "moduleOrder": 416,
+  "learnPriority": 416,
+  "createdAt": {
+    "$date": "2026-05-25T06:01:59.127Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T06:02:23.844Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a153b8f7d9cb208dc978e93"
+  },
+  "domain": "Other Programming",
+  "topic": "Go Lang",
+  "moduleOrder": 0,
+  "learnPriority": 0,
+  "createdAt": {
+    "$date": "2026-05-26T06:19:59.491Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-26T06:19:59.491Z"
+  },
+  "__v": 0
 }]

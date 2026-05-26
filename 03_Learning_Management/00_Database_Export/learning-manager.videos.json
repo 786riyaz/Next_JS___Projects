@@ -828,13 +828,13 @@
   "videoName": "Learn CSS Flexbox in 20 Minutes (Course)",
   "channelName": "Coding2GO",
   "youtubeLink": "https://www.youtube.com/watch?v=wsTv9y931o8",
-  "series": "false",
-  "downloaded": false,
+  "series": false,
+  "downloaded": true,
   "createdAt": {
     "$date": "2026-05-12T09:31:31.181Z"
   },
   "updatedAt": {
-    "$date": "2026-05-12T09:31:31.181Z"
+    "$date": "2026-05-16T10:53:16.763Z"
   },
   "__v": 0
 },
@@ -848,13 +848,13 @@
   "videoName": "7 CSS Tricks That Will Blow Your Mind",
   "channelName": "Coding2GO",
   "youtubeLink": "https://www.youtube.com/watch?v=Ol62e-dWu0E",
-  "series": "false",
-  "downloaded": false,
+  "series": false,
+  "downloaded": true,
   "createdAt": {
     "$date": "2026-05-12T09:31:31.213Z"
   },
   "updatedAt": {
-    "$date": "2026-05-12T09:31:31.213Z"
+    "$date": "2026-05-16T10:57:54.675Z"
   },
   "__v": 0
 },
@@ -869,12 +869,12 @@
   "channelName": "JavaScript Mastery",
   "youtubeLink": "https://www.youtube.com/watch?v=tS7upsfuxmo",
   "series": false,
-  "downloaded": false,
+  "downloaded": true,
   "createdAt": {
     "$date": "2026-05-12T09:31:31.242Z"
   },
   "updatedAt": {
-    "$date": "2026-05-13T07:02:52.749Z"
+    "$date": "2026-05-16T10:57:48.512Z"
   },
   "__v": 0
 },
@@ -888,13 +888,13 @@
   "videoName": "New CSS Property corner-shape Is Amazing",
   "channelName": "Web Dev Simplified",
   "youtubeLink": "https://www.youtube.com/watch?v=AhBL2MYlQj0",
-  "series": "false",
-  "downloaded": false,
+  "series": false,
+  "downloaded": true,
   "createdAt": {
     "$date": "2026-05-12T09:31:31.268Z"
   },
   "updatedAt": {
-    "$date": "2026-05-12T09:31:31.268Z"
+    "$date": "2026-05-16T10:54:11.488Z"
   },
   "__v": 0
 },
@@ -1328,13 +1328,13 @@
   "videoName": "Browser APIs Just Killed Off Your JavaScript Dependencies",
   "channelName": "Pixel Grid UI",
   "youtubeLink": "https://www.youtube.com/watch?v=jHRHV1MNR5s",
-  "series": "false",
-  "downloaded": false,
+  "series": false,
+  "downloaded": true,
   "createdAt": {
     "$date": "2026-05-12T09:31:31.897Z"
   },
   "updatedAt": {
-    "$date": "2026-05-12T09:31:31.897Z"
+    "$date": "2026-05-16T11:06:24.703Z"
   },
   "__v": 0
 },
@@ -1348,13 +1348,13 @@
   "videoName": "Master JavaScript Promises in an easy way",
   "channelName": "Nova Designs",
   "youtubeLink": "https://www.youtube.com/watch?v=Qx8Xx4djxqs",
-  "series": "false",
+  "series": false,
   "downloaded": false,
   "createdAt": {
     "$date": "2026-05-12T09:31:31.931Z"
   },
   "updatedAt": {
-    "$date": "2026-05-12T09:31:31.931Z"
+    "$date": "2026-05-16T11:06:04.323Z"
   },
   "__v": 0
 },
@@ -9355,6 +9355,2366 @@
   },
   "updatedAt": {
     "$date": "2026-05-13T10:11:49.650Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0593eb5852a9d3fd7e99ed"
+  },
+  "domain": "Hobbies",
+  "priority": 801,
+  "topic": "Chess",
+  "videoName": "Every Chess Checkmate From Beginner to Grandmaster Explained",
+  "channelName": "Chess Explained",
+  "youtubeLink": "https://www.youtube.com/watch?v=iEuLPFJZ1rY",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-14T09:20:43.249Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-14T09:20:43.249Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a06cfbadb5d29ecf782f6f0"
+  },
+  "domain": "System Design",
+  "priority": 510,
+  "topic": "Event Driven System",
+  "videoName": "The Secret to Reliable Event-Driven Systems 🤫 | Outbox Pattern | Explained in Hindi | Day 47/100",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=05Hi7lj1n1I",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-15T07:48:10.900Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-15T07:48:37.432Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a06d05ddb5d29ecf782f6f1"
+  },
+  "domain": "Personal",
+  "priority": 707,
+  "topic": "Financial",
+  "videoName": "₹1 Crore Mindset: Can YouTube Automation Make You Crorepati in 2026?",
+  "channelName": "CoolMitra",
+  "youtubeLink": "https://www.youtube.com/watch?v=f_gwr8aC2s8",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-15T07:50:53.191Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-15T07:50:53.191Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a06d0cddb5d29ecf782f6f2"
+  },
+  "domain": "WebDev",
+  "priority": 214,
+  "topic": "Backend",
+  "videoName": "REST APIs in Hindi: The Ultimate Course for Web Development Mastery🔥| Coder's Gyan",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=iM8h8-LcJPk",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-15T07:52:45.027Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-15T07:52:45.027Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a06d125db5d29ecf782f6f3"
+  },
+  "domain": "WebDev",
+  "priority": 225,
+  "topic": "Web Dev",
+  "videoName": "Leaflet.js crash course with practical project | Open-source interactive maps 🔥 in Hindi",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=LWML4HkOAi0&list=PLXQpH_kZIxTX-y101GIoKpXzvFAkp85vM",
+  "series": true,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-15T07:54:13.854Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-15T07:55:12.334Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a06d148db5d29ecf782f6f4"
+  },
+  "domain": "WebDev",
+  "priority": 214,
+  "topic": "Backend",
+  "videoName": "Learn to build AI SAAS with strapi powered reliable backend",
+  "channelName": "Hitesh Choudhary",
+  "youtubeLink": "https://www.youtube.com/watch?v=4HaFaYMbal0",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-15T07:54:48.326Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-15T07:54:48.326Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a06d181db5d29ecf782f6f5"
+  },
+  "domain": "Personal",
+  "priority": 702,
+  "topic": "Body",
+  "videoName": "Why You’re Skinny Fat (And How to Fix It FAST)",
+  "channelName": "Selfinity Core",
+  "youtubeLink": "https://www.youtube.com/watch?v=z5Vv2ex7oHY",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-15T07:55:45.798Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-15T07:55:45.798Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a06d1b2db5d29ecf782f6f6"
+  },
+  "domain": "WebDev",
+  "priority": 214,
+  "topic": "Backend",
+  "videoName": "Master API Testing with Postman: Essential Hindi Tutorial for Beginners! | Postman & DevOps Basics",
+  "channelName": "Vikas Jha",
+  "youtubeLink": "https://www.youtube.com/watch?v=lId_LdQ8wXU",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-15T07:56:34.380Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-15T07:56:34.380Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a06d1c8db5d29ecf782f6f7"
+  },
+  "domain": "Personal",
+  "priority": 706,
+  "topic": "Learning",
+  "videoName": "🧠 Increase Brain Memory Power and IQ LEVEL with Neurobics Exercises for Students (Hindi)",
+  "channelName": "CoolMitra",
+  "youtubeLink": "https://www.youtube.com/watch?v=0XkM0L7URAA&list=PL1JWm1dUlUlvC6P3WfnhlZ3uEzWQm5ZZ1",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-15T07:56:56.077Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-15T07:56:56.077Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a06d1dedb5d29ecf782f6f8"
+  },
+  "domain": "Other Programming",
+  "priority": 611,
+  "topic": "Mobile Development",
+  "videoName": "Monitoring Mobile Applications | Real User Monitoring",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=Y4lpmVymXD4",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-15T07:57:18.607Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-15T07:57:18.607Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a08487c78c37d143887a467"
+  },
+  "domain": "Deployment",
+  "priority": 317,
+  "topic": "GitHub Actions",
+  "videoName": "GitHub Actions & Kubernetes Masterclass For DevOps Engineers (LIVE)",
+  "channelName": "TrainWithShubham",
+  "youtubeLink": "https://www.youtube.com/watch?v=VHEjAyKv2hk",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:35:40.669Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:36:01.607Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a08493f78c37d143887a468"
+  },
+  "domain": "WebDev",
+  "priority": 225,
+  "topic": "Web Dev",
+  "videoName": "Map Live User Location using Leaflet.js and OpenStreetMap - JavaScript Tutorial",
+  "channelName": "OpenJavaScript",
+  "youtubeLink": "https://www.youtube.com/watch?v=NyjMmNCtKf4",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:38:55.602Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:38:55.602Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a08499478c37d143887a469"
+  },
+  "domain": "WebDev",
+  "priority": 222,
+  "topic": "Redis",
+  "videoName": "06 Email queue with redis lists",
+  "channelName": "Chai aur Code",
+  "youtubeLink": "https://www.youtube.com/watch?v=r005ciJ55DY",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:40:20.184Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:40:20.184Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0849a378c37d143887a46a"
+  },
+  "domain": "WebDev",
+  "priority": 222,
+  "topic": "Redis",
+  "videoName": "04 Building a OTP verification with Redis",
+  "channelName": "Chai aur Code",
+  "youtubeLink": "https://www.youtube.com/watch?v=MlxmA5_cc_Y",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:40:35.247Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:40:35.247Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0849b378c37d143887a46b"
+  },
+  "domain": "WebDev",
+  "priority": 222,
+  "topic": "Redis",
+  "videoName": "02 Complete local setup to learn Redis",
+  "channelName": "Chai aur Code",
+  "youtubeLink": "https://www.youtube.com/watch?v=UEm0mHeXdxk",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:40:51.728Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:40:51.728Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0849c578c37d143887a46c"
+  },
+  "domain": "WebDev",
+  "priority": 222,
+  "topic": "Redis",
+  "videoName": "05 User profile in Redis   JSON vs HASH",
+  "channelName": "Chai aur Code",
+  "youtubeLink": "https://www.youtube.com/watch?v=MFnK1PRABDU",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:41:09.244Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:41:09.244Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0849ee78c37d143887a46d"
+  },
+  "domain": "WebDev",
+  "priority": 222,
+  "topic": "Redis",
+  "videoName": "01 What is Redis and why it exists",
+  "channelName": "Chai aur Code",
+  "youtubeLink": "https://www.youtube.com/watch?v=5YqP18Gyop0",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:41:50.384Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:41:50.384Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a084a2078c37d143887a46e"
+  },
+  "domain": "WebDev",
+  "priority": 219,
+  "topic": "PostgreSQL",
+  "videoName": "Postgres Full-Text Search - No Extra Services Needed | Explained in Hindi | Day 94/100",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=Cv3lg4_mato",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:42:40.400Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:42:40.400Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a084a3f78c37d143887a46f"
+  },
+  "domain": "WebDev",
+  "priority": 228,
+  "topic": "MicroServices",
+  "videoName": "Stop using Microservices (do this instead) | Hindi | Coder's Gyan",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=eMxjSSOVpbA",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:43:11.711Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:43:11.711Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a084a6578c37d143887a470"
+  },
+  "domain": "WebDev",
+  "priority": 208,
+  "topic": "ExpressJS",
+  "videoName": "Express.js Crash Course: Fast-Track Your Web Development Skills! 🔥| Hindi",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=46Mjvdv_UUM",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:43:49.913Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:43:49.913Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a084a9d78c37d143887a471"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "Think in JavaScript – The Hard & Conceptual Parts (Full Course)",
+  "channelName": "freeCodeCamp.org",
+  "youtubeLink": "https://www.youtube.com/watch?v=x7u2c0DhWEU",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:44:45.159Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:44:45.159Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a084ab878c37d143887a472"
+  },
+  "domain": "AI/LLM",
+  "priority": 411,
+  "topic": "AI Coding",
+  "videoName": "AI writes BAD CODE, you can't recognise (unless you know THIS PATTERN) | Hindi",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=tv1x7gVDLgc",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:45:12.175Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:45:12.175Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a084ad478c37d143887a473"
+  },
+  "domain": "AI/LLM",
+  "priority": 409,
+  "topic": "GenAI",
+  "videoName": "Python & JS Rule GenAI… But What About Golang? Explained in Hindi | Day 10/100",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=R9-XKmFi2Cg",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:45:40.754Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:45:40.754Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a084aeb78c37d143887a474"
+  },
+  "domain": "WebDev",
+  "priority": 217,
+  "topic": "MERN",
+  "videoName": "File sharing app with deployment  in Node Js, Express Js, Mongo DB in Hindi",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=_xKCi5OI_Mg",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T10:46:03.266Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T10:46:03.266Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a089a94d346fb111b88d30b"
+  },
+  "domain": "Other",
+  "priority": 904,
+  "topic": "IT",
+  "videoName": "Set up a new laptop for Software Development",
+  "channelName": "Alex Ziskind",
+  "youtubeLink": "https://www.youtube.com/watch?v=Hn4Z3K8kSrM",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-16T16:25:56.898Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-16T16:25:56.898Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a09950fa95fce8447f37825"
+  },
+  "domain": "WebDev",
+  "priority": 209,
+  "topic": "ReactJS",
+  "videoName": "Why useEfffect is Bad? What most developers ignore.",
+  "channelName": "Frontend Master",
+  "youtubeLink": "https://www.youtube.com/watch?v=M6kFv2WZ3X0",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:14:39.564Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:14:39.564Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a099529a95fce8447f37826"
+  },
+  "domain": "WebDev",
+  "priority": 225,
+  "topic": "Web Dev",
+  "videoName": "Learn Microservices and Kafka with an E-commerce Example | Kafka Tutorial for beginners",
+  "channelName": "Lama Dev",
+  "youtubeLink": "https://www.youtube.com/watch?v=217EO1KZfH4",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:15:05.627Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:15:05.627Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a099544a95fce8447f37827"
+  },
+  "domain": "WebDev",
+  "priority": 222,
+  "topic": "Redis",
+  "videoName": "08 Build a pub sub with Redis",
+  "channelName": "Chai aur Code",
+  "youtubeLink": "https://www.youtube.com/watch?v=0Y6PbN4NEz0",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:15:32.023Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:15:32.023Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a099552a95fce8447f37828"
+  },
+  "domain": "WebDev",
+  "priority": 220,
+  "topic": "NextJS",
+  "videoName": "NextJS 16 SEO Crash Course - Metadata, Robots, Sitemap, OpenGraph...",
+  "channelName": "PedroTech",
+  "youtubeLink": "https://www.youtube.com/watch?v=cgq_HsDduSQ",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:15:46.705Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:15:46.705Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0995b8a95fce8447f37829"
+  },
+  "domain": "AI/LLM",
+  "priority": 411,
+  "topic": "AI Coding",
+  "videoName": "Full Claude Tutorial for Beginners - Become A Pro In Just 30 Minutes!",
+  "channelName": "Ayushman Pandita",
+  "youtubeLink": "https://www.youtube.com/watch?v=iLyDaoqO784",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:17:28.289Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:17:28.289Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0995d3a95fce8447f3782a"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "ES6 in JavaScript Explained in Hindi | Beginner to Expert 🔥 | Complete Course #14",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=O-rzja-2OPk",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:17:55.151Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:17:55.151Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a09969ca95fce8447f3782b"
+  },
+  "domain": "WebDev",
+  "priority": 224,
+  "topic": "NestJS",
+  "videoName": "Next.js 16 Full Stack Course (8+ Hours) | Auth, Caching, Server Actions & Much More",
+  "channelName": "Jan Marshal",
+  "youtubeLink": "https://www.youtube.com/watch?v=MZbwu3-uz3Y",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:21:16.040Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:21:16.040Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0996afa95fce8447f3782c"
+  },
+  "domain": "Personal",
+  "priority": 705,
+  "topic": "Personality",
+  "videoName": "Mental Discipline Book Summary | अपने दिमाग को कंट्रोल करना सीखो",
+  "channelName": "Reader's club",
+  "youtubeLink": "https://www.youtube.com/watch?v=tEMQ4_ICv94",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:21:35.314Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:21:35.314Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0996c7a95fce8447f3782d"
+  },
+  "domain": "General",
+  "priority": 101,
+  "topic": "Communication Skill",
+  "videoName": "How to speak on the spot! Framework thinking to be instantly ARTICULATE.",
+  "channelName": "Ipsita Das",
+  "youtubeLink": "https://www.youtube.com/watch?v=JB93fRLj3fA",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:21:59.099Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:21:59.099Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a099be5a95fce8447f3782f"
+  },
+  "domain": "Other",
+  "priority": 905,
+  "topic": "Gaming",
+  "videoName": "Best Handheld Windows Gaming Console I don't Want To Recommend- Asus ROG Ally X",
+  "channelName": "Venom's Tech",
+  "youtubeLink": "https://www.youtube.com/watch?v=nq5hnTvCVus",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:43:49.319Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:44:04.370Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a099c24a95fce8447f37830"
+  },
+  "domain": "Other",
+  "priority": 905,
+  "topic": "Gaming",
+  "videoName": "The Most Expensive Windows Gaming Handheld - Asus ROG Xbox Ally X",
+  "channelName": "Venom's Tech",
+  "youtubeLink": "https://www.youtube.com/watch?v=WdIO3Twgjec",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:44:52.793Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:44:52.793Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a099c4ba95fce8447f37831"
+  },
+  "domain": "Other",
+  "priority": 905,
+  "topic": "Gaming",
+  "videoName": "Lenovo Legion Go - Better Than Other Handhelds?",
+  "channelName": "Venom's Tech",
+  "youtubeLink": "https://www.youtube.com/watch?v=pOF5_oONwc8",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-17T10:45:31.522Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-17T10:45:31.522Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0abe8f9af8072b7a96e3fa"
+  },
+  "domain": "Other Programming",
+  "priority": 601,
+  "topic": "IoT",
+  "videoName": "Pico Course for Beginners | Coding, Electronics and Microcontrollers",
+  "channelName": "Core Electronics",
+  "youtubeLink": "https://www.youtube.com/watch?v=Ic4ExTusoTw",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T07:23:59.163Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T07:23:59.163Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0abea19af8072b7a96e3fb"
+  },
+  "domain": "Other Programming",
+  "priority": 601,
+  "topic": "IoT",
+  "videoName": "Want To Learn A Microcontroller? Start Here. | Raspberry Pi Pico Workshop: Intro",
+  "channelName": "Core Electronics",
+  "youtubeLink": "https://www.youtube.com/watch?v=etjU-I0sKZc&list=PLPK2l9Knytg4f6qkY65dizne2yAWeIyKD",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T07:24:17.459Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T07:24:17.459Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0abec79af8072b7a96e3fc"
+  },
+  "domain": "WebDev",
+  "priority": 214,
+  "topic": "Backend",
+  "videoName": "🚀🔥 Complete Backend Development in One Day (2025) | Hindi | Notes | GitHub | Free Certification",
+  "channelName": "Complete Coding by Prashant Sir",
+  "youtubeLink": "https://www.youtube.com/watch?v=gxHXPmePnvo",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T07:24:55.781Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T07:24:55.781Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0abf2a9af8072b7a96e3fd"
+  },
+  "domain": "WebDev",
+  "priority": 225,
+  "topic": "Web Dev",
+  "videoName": "Web Development Tutorials For Beginners In Hindi: HTML, CSS, JavaScript & More",
+  "channelName": "CodeWithHarry",
+  "youtubeLink": "https://youtube.com/playlist?list=PLu0W_9lII9agiCUZYRsvtGTXdxkzPyItg&si=BTgnwIcBTn_Vza58",
+  "series": true,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T07:26:34.735Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T07:26:34.735Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ae68a9af8072b7a96e3fe"
+  },
+  "domain": "WebDev",
+  "priority": 217,
+  "topic": "MERN",
+  "videoName": "I Built a Full-Stack Project Management App (with Role-Based Access Control)",
+  "channelName": "NoBsTech",
+  "youtubeLink": "https://www.youtube.com/watch?v=xlzY6JdSffQ",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T10:14:34.053Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T10:14:34.053Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ae6a29af8072b7a96e3ff"
+  },
+  "domain": "System Design",
+  "priority": 503,
+  "topic": "Load Balancer",
+  "videoName": "API Gateway vs Load Balancer: Why Every Developer Gets This Wrong in System Design",
+  "channelName": "The Desi Architect",
+  "youtubeLink": "https://www.youtube.com/watch?v=Q3KKBHetV5M",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T10:14:58.308Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T10:14:58.308Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ae6b79af8072b7a96e400"
+  },
+  "domain": "Hobbies",
+  "priority": 801,
+  "topic": "Chess",
+  "videoName": "How To Beat Everyone With London System! (Every Single Line Explained in Hindi)",
+  "channelName": "ProfessorChess",
+  "youtubeLink": "https://www.youtube.com/watch?v=ozE-NNLnVCQ",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T10:15:19.397Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T10:15:19.397Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ae6ce9af8072b7a96e401"
+  },
+  "domain": "WebDev",
+  "priority": 206,
+  "topic": "Git",
+  "videoName": "Monorepo setup guide   How Big Companies Share Code Across Projects",
+  "channelName": "Chai aur Code",
+  "youtubeLink": "https://www.youtube.com/watch?v=780Fyv-SAUk",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T10:15:42.763Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T10:15:42.763Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ae70d9af8072b7a96e402"
+  },
+  "domain": "WebDev",
+  "priority": 214,
+  "topic": "Backend",
+  "videoName": "Every API Authentication Method Explained (Don’t Choose the Wrong One)",
+  "channelName": "Cloud X Berry",
+  "youtubeLink": "https://www.youtube.com/watch?v=_lTECv25N2U",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T10:16:45.215Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T10:16:45.215Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ae7189af8072b7a96e403"
+  },
+  "domain": "WebDev",
+  "priority": 203,
+  "topic": "CSS",
+  "videoName": "CSS Can Count Elements Now",
+  "channelName": "Coding2GO",
+  "youtubeLink": "https://www.youtube.com/watch?v=ISHneblVJYI",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T10:16:56.091Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T10:16:56.091Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ae7399af8072b7a96e404"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "JavaScript Full Course 2026 | Master Javascript in 22 Hours",
+  "channelName": "Coder Army",
+  "youtubeLink": "https://www.youtube.com/watch?v=6_NrgoEkjnE",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T10:17:29.583Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T10:17:29.583Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ae7539af8072b7a96e405"
+  },
+  "domain": "Other Programming",
+  "priority": 608,
+  "topic": "Java",
+  "videoName": "Master Spring Boot - Your 1st video to get started with Spring Boot",
+  "channelName": "Hitesh Choudhary",
+  "youtubeLink": "https://www.youtube.com/watch?v=_oDpUs65OiA",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T10:17:55.369Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T10:17:55.369Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ae7c29af8072b7a96e406"
+  },
+  "domain": "Personal",
+  "priority": 707,
+  "topic": "Financial",
+  "videoName": "I Help Ali Abdaal Get To $5M",
+  "channelName": "Taki Moore",
+  "youtubeLink": "https://www.youtube.com/watch?v=76d6RlRj2Yk",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T10:19:46.744Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T10:19:46.744Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ae82e9af8072b7a96e407"
+  },
+  "domain": "AI/LLM",
+  "priority": 413,
+  "topic": "AI Tools",
+  "videoName": "How to Access Premium AI Models for FREE Using AgentRouter API (2026)🔥",
+  "channelName": "Oxg Tech",
+  "youtubeLink": "https://www.youtube.com/watch?v=VIFmEkmlfAA",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T10:21:34.983Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T10:21:34.983Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ae8479af8072b7a96e408"
+  },
+  "domain": "Personal",
+  "priority": 707,
+  "topic": "Financial",
+  "videoName": "NO BAKWAAS - सबसे बड़ी Financial Mistake | इससे पहले कि बहुत देर हो जाए 7 बातें सीख लो!",
+  "channelName": "yebook",
+  "youtubeLink": "https://www.youtube.com/watch?v=X20jxV5oFvI",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T10:21:59.935Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T10:21:59.935Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0af4f19af8072b7a96e40a"
+  },
+  "domain": "Personal",
+  "priority": 710,
+  "topic": "Job",
+  "videoName": "17 Mistakes to AVOID in every Job | Employers hide these from you!",
+  "channelName": "Labour Law Advisor",
+  "youtubeLink": "https://www.youtube.com/watch?v=YhFA9c3ByKY",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T11:16:01.136Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T11:16:24.326Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0aff8a9af8072b7a96e40b"
+  },
+  "domain": "Other",
+  "priority": 901,
+  "topic": "NotebookLM",
+  "videoName": "Master NotebookLM in 11 Minutes (Full 2026 Guide)",
+  "channelName": "Aishwarya Srinivasan",
+  "youtubeLink": "https://www.youtube.com/watch?v=6vzB41UQjLo",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T12:01:14.267Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T12:01:14.267Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0affcf9af8072b7a96e40c"
+  },
+  "domain": "Other",
+  "priority": 901,
+  "topic": "NotebookLM",
+  "videoName": "Learn 85% of NotebookLM in 10 Minutes | Notebook LM Tutorial 2026 اردو / हिंदी",
+  "channelName": "HBA Services",
+  "youtubeLink": "https://www.youtube.com/watch?v=Evaq2PZTe4M",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T12:02:23.067Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T12:02:23.067Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0b03579af8072b7a96e40d"
+  },
+  "domain": "Personal",
+  "priority": 710,
+  "topic": "Job",
+  "videoName": "The EASIEST Way to Get a REMOTE JOB in 2026 (No Luck Needed)",
+  "channelName": "Savinder Puri",
+  "youtubeLink": "https://www.youtube.com/watch?v=Shjnd9GNifU",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T12:17:27.863Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T12:17:27.863Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0b058c9af8072b7a96e40e"
+  },
+  "domain": "Other Programming",
+  "priority": 601,
+  "topic": "IoT",
+  "videoName": "How to Make a Radar with Arduino |  Arduino Project | Indian LifeHacker",
+  "channelName": "Indian LifeHacker",
+  "youtubeLink": "https://www.youtube.com/watch?v=JvmIutmQd9U&list=PLKASro0L7R2XA4I8bJpARx9vq9hSyos7l",
+  "series": true,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T12:26:52.465Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T12:27:14.066Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0b3b949af8072b7a96e40f"
+  },
+  "domain": "WebDev",
+  "priority": 212,
+  "topic": "SQL",
+  "videoName": "SQL - Complete Course in 3 Hours | SQL One Shot using MySQL",
+  "channelName": "Apna College",
+  "youtubeLink": "https://www.youtube.com/watch?v=hlGoQC332VM",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-18T16:17:24.066Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-18T16:17:24.066Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0c47bdb131cce1edb45316"
+  },
+  "domain": "WebDev",
+  "priority": 214,
+  "topic": "Backend",
+  "videoName": "Auth0 authentication in Reactjs using OAuth2",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=oA-K3DfG1QY",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-19T11:21:33.120Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-19T11:21:33.120Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0eb99ba7e45fe53ff2f325"
+  },
+  "domain": "Deployment",
+  "priority": 313,
+  "topic": "Kubernetes",
+  "videoName": "Kubernetes is NOT Dead!",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=F7XweZ9jEYc",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:51:55.807Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:51:55.807Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0eb9c1a7e45fe53ff2f326"
+  },
+  "domain": "WebDev",
+  "priority": 220,
+  "topic": "NextJS",
+  "videoName": "Coding a SAAS platform in 6 hours - NextJS, Tailwind, Prisma, Postgres",
+  "channelName": "Harkirat Singh",
+  "youtubeLink": "https://www.youtube.com/watch?v=GhH1QWY6BDc",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:52:33.131Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:52:33.131Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0eb9dba7e45fe53ff2f327"
+  },
+  "domain": "AI/LLM",
+  "priority": 406,
+  "topic": "AI Agent",
+  "videoName": "The Claude Features to Get You Ahead of 99% of AI Users | Beginner’s Guide",
+  "channelName": "The iScale",
+  "youtubeLink": "https://www.youtube.com/watch?v=80iMgJDIj-4",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:52:59.252Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:52:59.252Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0eba04a7e45fe53ff2f328"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "Authentication with Node.js and Passport.js: Username/Password, Google OAuth and React integration",
+  "channelName": "manfra․io",
+  "youtubeLink": "https://www.youtube.com/watch?v=nn1yP_aI7SI",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:53:40.281Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:53:40.281Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0eba13a7e45fe53ff2f329"
+  },
+  "domain": "AI/LLM",
+  "priority": 409,
+  "topic": "GenAI",
+  "videoName": "GenAI Full Course for Beginners in 2025",
+  "channelName": "Patel MernStack",
+  "youtubeLink": "https://www.youtube.com/watch?v=yO4wI8OWPK4",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:53:55.910Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:53:55.910Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0eba33a7e45fe53ff2f32a"
+  },
+  "domain": "WebDev",
+  "priority": 207,
+  "topic": "NodeJS",
+  "videoName": "Build a Multi-Tenant app with NodeJS and Prisma - Multiple Database Connections",
+  "channelName": "Scalable Scripts",
+  "youtubeLink": "https://www.youtube.com/watch?v=RA5x1sEmJGo",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:54:27.980Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:54:27.980Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0eba60a7e45fe53ff2f32b"
+  },
+  "domain": "WebDev",
+  "priority": 207,
+  "topic": "NodeJS",
+  "videoName": "Hostinger Just Made Node.js Hosting FREE?! 😱 (Complete Setup Tutorial)",
+  "channelName": "Thapa Technical",
+  "youtubeLink": "https://www.youtube.com/watch?v=JVrN12MY5W4",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:55:12.637Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:55:12.637Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0eba81a7e45fe53ff2f32c"
+  },
+  "domain": "WebDev",
+  "priority": 227,
+  "topic": "gRPC",
+  "videoName": "gRPC Explained - Architecture, Speed & Use Cases | Learn gRPC | Hindi | Day 78/100",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=4v_udyD6fnQ",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:55:45.297Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:55:45.297Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebab2a7e45fe53ff2f32d"
+  },
+  "domain": "WebDev",
+  "priority": 219,
+  "topic": "PostgreSQL",
+  "videoName": "Use Postgres as a Message Queue | No RabbitMQ or Kafka | Explained in Hindi | Day 93/100",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=gJi1a0kCz2Q",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:56:34.155Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:56:34.155Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebad1a7e45fe53ff2f32e"
+  },
+  "domain": "WebDev",
+  "priority": 225,
+  "topic": "Web Dev",
+  "videoName": "Can You Design Zomato/Swiggy’s Database? Let’s Do It... | Hindi | Day 91/100",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=5fQOQcReSA8",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:57:05.860Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:57:05.860Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebaf9a7e45fe53ff2f32f"
+  },
+  "domain": "WebDev",
+  "priority": 222,
+  "topic": "Redis",
+  "videoName": "09 Live leaderboard with Redis as assignment",
+  "channelName": "Chai aur Code",
+  "youtubeLink": "https://www.youtube.com/watch?v=RTJMwBObHPE",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:57:45.780Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:57:45.780Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebb24a7e45fe53ff2f330"
+  },
+  "domain": "WebDev",
+  "priority": 207,
+  "topic": "NodeJS",
+  "videoName": "Next.Js 16 Caching Complete Course | Hindi | Day 82/100",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=1QAnvxTLrYM",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:58:28.592Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:58:28.592Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebb3ea7e45fe53ff2f331"
+  },
+  "domain": "AI/LLM",
+  "priority": 405,
+  "topic": "RAG",
+  "videoName": "What is RAG ? | Completely Explained in 15 Minutes",
+  "channelName": "Apna College",
+  "youtubeLink": "https://www.youtube.com/watch?v=Ty8gcCKuwNI",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:58:54.333Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:58:54.333Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebb4ba7e45fe53ff2f332"
+  },
+  "domain": "WebDev",
+  "priority": 214,
+  "topic": "Backend",
+  "videoName": "Why Every Developer Needs to Understand Middleware",
+  "channelName": "Nova Designs",
+  "youtubeLink": "https://www.youtube.com/watch?v=Lb-5ziwsqpc",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:59:07.498Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T07:59:07.498Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebb5aa7e45fe53ff2f333"
+  },
+  "domain": "WebDev",
+  "priority": 203,
+  "topic": "CSS",
+  "videoName": "CSS If Function: Replace @media + @supports with One Line (2026)",
+  "channelName": "Pixel Grid UI",
+  "youtubeLink": "https://www.youtube.com/watch?v=NdXTYmUwY3Y",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T07:59:22.699Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-22T12:23:37.145Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebb95a7e45fe53ff2f334"
+  },
+  "domain": "AI/LLM",
+  "priority": 405,
+  "topic": "RAG",
+  "videoName": "Build a PDF QnA Chatbot from Scratch | RAG Pipeline + LangChain + Gemini + Streamlit #genai",
+  "channelName": "TechSimPlus Learnings",
+  "youtubeLink": "https://www.youtube.com/watch?v=DHnyDE2qPxY",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:00:21.480Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:00:21.480Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebbaba7e45fe53ff2f335"
+  },
+  "domain": "Other Programming",
+  "priority": 609,
+  "topic": "Python",
+  "videoName": "Complete Python for AI & ML (Beginner to Pro)",
+  "channelName": "Not Your College",
+  "youtubeLink": "https://www.youtube.com/watch?v=62eeQhh7SrI",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:00:43.461Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:00:43.461Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebbc2a7e45fe53ff2f336"
+  },
+  "domain": "AI/LLM",
+  "priority": 407,
+  "topic": "MCP",
+  "videoName": "MCP Architecture Explained – Ollama, MCP Servers & Human in the Loop",
+  "channelName": "Tokens & Threads",
+  "youtubeLink": "https://www.youtube.com/watch?v=EVJVekS1klE",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:01:06.470Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:01:06.470Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebbd5a7e45fe53ff2f337"
+  },
+  "domain": "WebDev",
+  "priority": 218,
+  "topic": "TypeScript",
+  "videoName": "TypeScript Full Course for Beginners | Learn TypeScript with Real Project",
+  "channelName": "WsCube AI & Tech School",
+  "youtubeLink": "https://www.youtube.com/watch?v=qrlTkTvW_bI",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:01:25.320Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:01:25.320Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebbe5a7e45fe53ff2f338"
+  },
+  "domain": "Deployment",
+  "priority": 306,
+  "topic": "Deployment",
+  "videoName": "From Code to Production | How Deployment Actually Works (0 to 1M+ Users)",
+  "channelName": "Sheryians Coding School",
+  "youtubeLink": "https://www.youtube.com/watch?v=bAO5aLZ4oYs",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:01:41.611Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:01:41.611Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebc9ba7e45fe53ff2f339"
+  },
+  "domain": "System Design",
+  "priority": 501,
+  "topic": "System Design",
+  "videoName": "System Design Full Course | Sharding | Caching | CAP Theorem Tutorial | Scaling | @SCALER",
+  "channelName": "SCALER",
+  "youtubeLink": "https://www.youtube.com/watch?v=nDswg13hZ9o",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:04:43.905Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:04:43.905Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebcb4a7e45fe53ff2f33a"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "Magic of Prototype in javascript | chai aur #javascript",
+  "channelName": "Chai aur Code",
+  "youtubeLink": "https://www.youtube.com/watch?v=uMI5cNeHTOc",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:05:08.521Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:05:08.521Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebcc9a7e45fe53ff2f33b"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "Prototypes & Prototypal Inheritance Explained - Javascript Interview",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=AOPmqw9scfc",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:05:29.882Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:05:29.882Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebcd7a7e45fe53ff2f33c"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "Build Your Own Promise",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=IxOJgcvlHHc",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:05:43.582Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:05:43.582Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebce4a7e45fe53ff2f33d"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "JavaScript Proxy and Reflect Objects",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=TGGoiJBuv-Y",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:05:56.551Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:05:56.551Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebcf1a7e45fe53ff2f33e"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "JavaScript Global Execution Context Explained!",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=gPKzwAORly8",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:06:09.741Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:06:09.741Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a0ebd00a7e45fe53ff2f33f"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "Objects in Javascript - Function Constructors and ES6 Class",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=vxPOQPPsATQ",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-21T08:06:24.588Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-21T08:06:24.588Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a104abd7bb5d624009f3633"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "Sets in Javascript (Set Object)",
+  "channelName": "dcode",
+  "youtubeLink": "https://www.youtube.com/watch?v=nGOnfYNo8F4",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-22T12:23:25.173Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-22T12:23:25.173Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a115eb182c9b774a252e75f"
+  },
+  "domain": "AI/LLM",
+  "priority": 411,
+  "topic": "AI Coding",
+  "videoName": "Vibe Coding is a TRAP (Escape Before It’s Too Late)",
+  "channelName": "Love Babbar",
+  "youtubeLink": "https://www.youtube.com/watch?v=MQHnJUCDnVA",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T08:00:49.600Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T08:00:49.600Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a115ed682c9b774a252e760"
+  },
+  "domain": "AI/LLM",
+  "priority": 408,
+  "topic": "Agentic AI",
+  "videoName": "Complete Agentic AI Course In 10 Hours- Langchain, Langgraph, RAG,Vectorless RAG, Guardrails,Evals",
+  "channelName": "Krish Naik",
+  "youtubeLink": "https://www.youtube.com/watch?v=rV3HJ4LEZ7k",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T08:01:26.723Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T08:01:26.723Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a115ee982c9b774a252e761"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "Temporal API: A Decade of Waiting Was Worth It (ES2026)",
+  "channelName": "Pixel Grid UI",
+  "youtubeLink": "https://www.youtube.com/watch?v=Q0BOHt6iHAY",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T08:01:45.250Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T08:01:45.250Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a115f0782c9b774a252e762"
+  },
+  "domain": "WebDev",
+  "priority": 222,
+  "topic": "Redis",
+  "videoName": "Redis OTP Storage with Docker | Node.js + Redis + Docker + MySQL | VectorDB Backend – tutorial #3",
+  "channelName": "JG universe",
+  "youtubeLink": "https://www.youtube.com/watch?v=6D8Jiq_-Itk",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T08:02:16.000Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T08:02:16.000Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a115f1982c9b774a252e763"
+  },
+  "domain": "WebDev",
+  "priority": 221,
+  "topic": "DSA",
+  "videoName": "5-Hour LeetCode Course: Core DSA Patterns for Interviews",
+  "channelName": "Mukul Raina",
+  "youtubeLink": "https://www.youtube.com/watch?v=ADWPbock-7U",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T08:02:33.793Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T08:02:33.793Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a115f2c82c9b774a252e765"
+  },
+  "domain": "AI/LLM",
+  "priority": 415,
+  "topic": "Hugging Face",
+  "videoName": "Build a Text Classification Model in 5 Hours | Hugging Face from Scratch",
+  "channelName": "Zero To Mastery",
+  "youtubeLink": "https://www.youtube.com/watch?v=XNDY7jtihok",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T08:02:52.522Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T08:09:34.934Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a115fc082c9b774a252e766"
+  },
+  "domain": "System Design",
+  "priority": 501,
+  "topic": "System Design",
+  "videoName": "Nginx is Dead!",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=uPjzRN6lakg",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T08:05:20.638Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T08:05:20.638Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a1162e382c9b774a252e767"
+  },
+  "domain": "AI/LLM",
+  "priority": 408,
+  "topic": "Agentic AI",
+  "videoName": "Agentic AI Explained | AI Agent vs Agentic AI vs RAG | Complete Beginner Guide",
+  "channelName": "ElevateMyCode",
+  "youtubeLink": "https://www.youtube.com/watch?v=0FCKcAM5FC8",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T08:18:43.368Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T08:18:43.368Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a1186e2d7d9fe3711c8b876"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "JavaScript Math Object – Everything You Need to Know!",
+  "channelName": "Ijaz Code Lab",
+  "youtubeLink": "https://www.youtube.com/watch?v=NKPlwMvGTi4",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T10:52:18.260Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T10:52:18.260Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a1189f6d7d9fe3711c8b877"
+  },
+  "domain": "WebDev",
+  "priority": 205,
+  "topic": "FrontEnd",
+  "videoName": "How to Create Toast Notifications (or Popups) - HTML, CSS & JavaScript Tutorial",
+  "channelName": "dcode",
+  "youtubeLink": "https://www.youtube.com/watch?v=kkuZTAMyAFI",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T11:05:26.797Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T11:05:26.797Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a118a09d7d9fe3711c8b878"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "InnerHTML vs InnerText vs TextContent | JavaScript DOM",
+  "channelName": "Gbemisola Oladetoun",
+  "youtubeLink": "https://www.youtube.com/watch?v=j4irWp6aSps",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T11:05:45.915Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T11:05:45.915Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a118b07d7d9fe3711c8b879"
+  },
+  "domain": "WebDev",
+  "priority": 214,
+  "topic": "Backend",
+  "videoName": "JWT Explained: How Stateless Authentication Actually Works | JWKS, RS256, Auth0",
+  "channelName": "NestJS Simplified",
+  "youtubeLink": "https://www.youtube.com/watch?v=athSK-E2Sus",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T11:09:59.457Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T11:09:59.457Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a118e6fd7d9fe3711c8b87a"
+  },
+  "domain": "AI/LLM",
+  "priority": 414,
+  "topic": "n8n",
+  "videoName": "n8n Complete Course (Beginner to Advanced) | WhatsApp Automation Project",
+  "channelName": "Manish Digital Academy",
+  "youtubeLink": "https://www.youtube.com/watch?v=zQM2HgNTBCs",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-23T11:24:31.364Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-23T11:24:31.364Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13336b45c4851e42bc4a05"
+  },
+  "domain": "AI/LLM",
+  "priority": 407,
+  "topic": "MCP",
+  "videoName": "MCP 2.0 is here",
+  "channelName": "Chai aur Code",
+  "youtubeLink": "https://www.youtube.com/watch?v=OQDtZGXLuQ0",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-24T17:20:43.984Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-24T17:20:43.984Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13e45db06d52720973c3dd"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "#3 JavaScript Logical Interview Question | Print Nested Object Keys Using Recursion #javascript`",
+  "channelName": "Code Step By Step",
+  "youtubeLink": "https://www.youtube.com/shorts/m1oJZNWsiDk",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T05:55:41.388Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T05:55:41.388Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13e544b06d52720973c3de"
+  },
+  "domain": "Deployment",
+  "priority": 305,
+  "topic": "Linux",
+  "videoName": "Setting Up the Perfect Developer Environment on Linux for 2025",
+  "channelName": "CodeOps HQ",
+  "youtubeLink": "https://www.youtube.com/watch?v=hKGPH9C-EFc",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T05:59:32.127Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T05:59:32.127Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13e5d8b06d52720973c3e0"
+  },
+  "domain": "AI/LLM",
+  "priority": 416,
+  "topic": "OpenClaw",
+  "videoName": "The Ultimate Beginner’s Guide to OpenClaw",
+  "channelName": "Metics Media",
+  "youtubeLink": "https://www.youtube.com/watch?v=st534T7-mdE",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T06:02:00.008Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T06:02:23.869Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13e618b06d52720973c3e1"
+  },
+  "domain": "Personal",
+  "priority": 707,
+  "topic": "Financial",
+  "videoName": "50 Loan Terms That Can Save You Lakhs! 🤑🤑",
+  "channelName": "Labour Law Advisor",
+  "youtubeLink": "https://www.youtube.com/watch?v=cE0n-fI5t-4",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T06:03:04.051Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T06:03:04.051Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13e6bbb06d52720973c3e2"
+  },
+  "domain": "AI/LLM",
+  "priority": 416,
+  "topic": "OpenClaw",
+  "videoName": "The OpenClaw Killer is here - Hermes Agent",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=fK2P2Q4T9FU",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T06:05:47.259Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T06:05:47.259Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13e6c8b06d52720973c3e3"
+  },
+  "domain": "AI/LLM",
+  "priority": 416,
+  "topic": "OpenClaw",
+  "videoName": "OpenClaw Crash Course for Beginner",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=6f9nl04PILI",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T06:06:00.222Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T06:06:00.222Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13e6d6b06d52720973c3e4"
+  },
+  "domain": "AI/LLM",
+  "priority": 416,
+  "topic": "OpenClaw",
+  "videoName": "OpenClaw Tutorial for Beginners | Automating Email + Calendar forever 🔥",
+  "channelName": "CodeWithHarry",
+  "youtubeLink": "https://www.youtube.com/watch?v=161yAjOIHAw",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T06:06:14.792Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T06:06:14.792Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13e6e8b06d52720973c3e5"
+  },
+  "domain": "AI/LLM",
+  "priority": 408,
+  "topic": "Agentic AI",
+  "videoName": "Claude Can Now Dream - Memory of Agentic AI Explained!",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=7YmA1MvKnuA",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T06:06:32.676Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T06:06:32.676Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13e6f3b06d52720973c3e6"
+  },
+  "domain": "Personal",
+  "priority": 702,
+  "topic": "Body",
+  "videoName": "5 Walks That Completely Change The Human Body",
+  "channelName": "Strength Mode",
+  "youtubeLink": "https://www.youtube.com/watch?v=Sjg_pKHQLh4",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T06:06:43.733Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T06:06:43.733Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a13e8feb06d52720973c3e7"
+  },
+  "domain": "AI/LLM",
+  "priority": 406,
+  "topic": "AI Agent",
+  "videoName": "The ONLY Claude AI Guide You’ll EVER Need",
+  "channelName": "Savinder Puri",
+  "youtubeLink": "https://www.youtube.com/watch?v=drhhHx_rSCw",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T06:15:26.722Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T06:15:26.722Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a1407f8b06d52720973c3e8"
+  },
+  "domain": "WebDev",
+  "priority": 214,
+  "topic": "Backend",
+  "videoName": "Only video you will need on CORS | Crash Course",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=ZQXKp-ha89c",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T08:27:36.182Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T08:27:36.182Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a140807b06d52720973c3e9"
+  },
+  "domain": "WebDev",
+  "priority": 222,
+  "topic": "Redis",
+  "videoName": "I added Redis Cache🔥 ... & the Results were INSANE 🤯| Explained In Hindi | Day 34/100",
+  "channelName": "Coder's Gyan",
+  "youtubeLink": "https://www.youtube.com/watch?v=50ydYAZG8MM",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-25T08:27:51.289Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-25T08:27:51.289Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a153b8f7d9cb208dc978e94"
+  },
+  "domain": "Other Programming",
+  "priority": 0,
+  "topic": "Go Lang",
+  "videoName": "Build a FullStack AI App with Next.js 16, Golang, PostgreSQL and N8N | Fullstack Golang Project",
+  "channelName": "Sangam Mukherjee",
+  "youtubeLink": "https://www.youtube.com/watch?v=AdY_s6JZiWw",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-26T06:19:59.848Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-26T06:19:59.848Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a156b94fbe6c26e71bbf602"
+  },
+  "domain": "AI/LLM",
+  "priority": 406,
+  "topic": "AI Agent",
+  "videoName": "AI Agents: Why 80% of Workflows Fail #AI #Shorts",
+  "channelName": "SynapByte",
+  "youtubeLink": "https://www.youtube.com/shorts/a6Et0StBq-M",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-26T09:44:52.624Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-26T09:44:52.624Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a156f1dfbe6c26e71bbf603"
+  },
+  "domain": "WebDev",
+  "priority": 204,
+  "topic": "JavaScript",
+  "videoName": "#4 JavaScript Logical Interview Question | Convert Object Keys to Array | 3 Ways | JS Shorts",
+  "channelName": "Code Step By Step",
+  "youtubeLink": "https://www.youtube.com/shorts/nRat4JRK4PE",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-26T09:59:57.131Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-26T09:59:57.131Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a159dc8fbe6c26e71bbf604"
+  },
+  "domain": "System Design",
+  "priority": 501,
+  "topic": "System Design",
+  "videoName": "Why Does Your Browser Show a Lock Icon And What Happens If It's Missing ? | SYSTEM DESIGN FOUNDATION",
+  "channelName": "Satyam Scripts",
+  "youtubeLink": "https://www.youtube.com/shorts/9quYGaungl8",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-26T13:19:04.857Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-26T13:19:04.857Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6a159f66fbe6c26e71bbf605"
+  },
+  "domain": "Deployment",
+  "priority": 311,
+  "topic": "Kafka",
+  "videoName": "Kafka is Dead!",
+  "channelName": "Piyush Garg",
+  "youtubeLink": "https://www.youtube.com/watch?v=6gBJ5jAIdQI",
+  "series": false,
+  "downloaded": false,
+  "createdAt": {
+    "$date": "2026-05-26T13:25:58.097Z"
+  },
+  "updatedAt": {
+    "$date": "2026-05-26T13:25:58.097Z"
   },
   "__v": 0
 }]
