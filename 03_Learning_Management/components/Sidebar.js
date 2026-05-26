@@ -9,6 +9,7 @@ export default function Sidebar() {
     { name: "YouTube Videos",       path: "/videos"     },
     { name: "Other Learning Links", path: "/links"      },
     { name: "Notes",                path: "/notes"      },
+    { name: "Tasks",                path: "/tasks"      },
     { name: "⚙️ Settings",         path: "/settings"   },
   ];
   return (
